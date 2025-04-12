@@ -147,21 +147,23 @@
             buttonContainer.className = 'advanced-button-group';
             buttonContainer.style.display = 'flex';
             buttonContainer.style.flexWrap = 'wrap';
-            buttonContainer.style.gap = '10px';
-            buttonContainer.style.marginTop = '20px';
+            buttonContainer.style.gap = '15px';
+            buttonContainer.style.marginTop = '30px';
             buttonContainer.style.justifyContent = 'center';
             buttonContainer.style.borderTop = '1px solid rgba(0,0,0,0.1)';
-            buttonContainer.style.paddingTop = '20px';
+            buttonContainer.style.paddingTop = '25px';
             
             // Add a heading for the advanced buttons section
             const heading = document.createElement('div');
-            heading.textContent = 'Advanced Features';
+            heading.textContent = 'ADVANCED FEATURES';
             heading.style.width = '100%';
             heading.style.textAlign = 'center';
-            heading.style.marginBottom = '15px';
+            heading.style.marginBottom = '20px';
             heading.style.fontWeight = 'bold';
-            heading.style.fontSize = '0.9rem';
+            heading.style.fontSize = '1.1rem';
             heading.style.color = '#666';
+            heading.style.letterSpacing = '1px';
+            heading.style.textTransform = 'uppercase';
             buttonContainer.appendChild(heading);
             
             elements.formFieldset.appendChild(buttonContainer);
@@ -170,11 +172,12 @@
         // Add buttons only if they don't already exist
         if (!document.querySelector('button[data-function="ai-toppings"]')) {
             // AI Toppings button
-            const aiBtn = createButton('Generate AI Toppings', () => {
+            const aiBtn = createButton('AI Toppings Generator', () => {
                 showAIToppings();
             }, 'fas fa-robot');
             aiBtn.dataset.function = "ai-toppings";
             aiBtn.title = "Let AI suggest random tech-themed toppings";
+            aiBtn.style.minWidth = '180px';
             buttonContainer.appendChild(aiBtn);
         }
 
@@ -222,14 +225,19 @@
         if (iconClass) {
             const icon = document.createElement('i');
             icon.className = iconClass;
+            icon.style.fontSize = '1.2rem'; // Make icons slightly larger
             btn.appendChild(icon);
             
             const span = document.createElement('span');
             span.textContent = text;
+            span.style.fontWeight = '600'; // Make text slightly bolder
             btn.appendChild(span);
         } else {
             btn.textContent = text;
         }
+        
+        // Additional styling for consistent button sizes
+        btn.style.minHeight = '45px';
         
         return btn;
     }
@@ -590,6 +598,11 @@
         calculationCompleted = false;
         pizzaReport = "";
 
+        // Check for special inputs that will trigger silly behaviors
+        if (checkForSillyInputs()) {
+            return; // Stop normal calculation if silly inputs detected
+        }
+
         // Save user inputs to localStorage
         savePizzaDefaults();
         
@@ -602,6 +615,336 @@
         // Calculate technical debt (new feature)
         calculateTechnicalDebt();
     }, 300); // 300ms debounce
+    
+    // Function to check for silly inputs and trigger special behaviors
+    function checkForSillyInputs() {
+        // Check for negative numbers
+        const attendees = parseFloat(elements.attendeesInput.value);
+        const slicesPerPerson = parseFloat(elements.slicesPerPersonInput.value);
+        const hoursDebugging = parseFloat(elements.hoursDebuggingInput.value);
+        
+        // Check for non-numerical/special characters
+        const hasSpecialChars = /[^0-9.-]/.test(elements.attendeesInput.value) || 
+                               /[^0-9.-]/.test(elements.slicesPerPersonInput.value) || 
+                               /[^0-9.-]/.test(elements.hoursDebuggingInput.value);
+        
+        // If we have negative numbers, trigger the "negative pizza" effect
+        if (attendees < 0 || slicesPerPerson < 0 || hoursDebugging < 0) {
+            triggerNegativePizzaEffect();
+            return true;
+        }
+        
+        // If we have special characters, trigger the "pizza glitch" effect
+        if (hasSpecialChars) {
+            triggerPizzaGlitchEffect();
+            return true;
+        }
+        
+        // No silly inputs detected
+        return false;
+    }
+    
+    // Function to create a bizarre negative pizza effect
+    function triggerNegativePizzaEffect() {
+        if (!elements.resultDiv) return;
+        
+        // Reset UI first
+        resetUI();
+        
+        // Create a glitched negative pizza outcome
+        const negativeContainer = document.createElement('div');
+        negativeContainer.style.position = 'relative';
+        negativeContainer.style.margin = '30px 0';
+        negativeContainer.style.padding = '30px';
+        negativeContainer.style.border = '2px dashed #F44336';
+        negativeContainer.style.borderRadius = '10px';
+        negativeContainer.style.backgroundColor = 'rgba(244, 67, 54, 0.1)';
+        negativeContainer.style.overflow = 'hidden';
+        
+        // Create glitchy text
+        const glitchText = document.createElement('h3');
+        glitchText.textContent = "NEGATIVE PIZZA DETECTED";
+        glitchText.style.color = '#F44336';
+        glitchText.style.fontFamily = "'Fira Code', monospace";
+        glitchText.style.textAlign = 'center';
+        glitchText.style.animation = 'glitch 0.3s infinite';
+        glitchText.style.marginBottom = '20px';
+        glitchText.style.textShadow = '3px 3px 0 rgba(255,0,0,0.3), -3px -3px 0 rgba(0,0,255,0.3)';
+        
+        // Create explanation
+        const explanation = document.createElement('p');
+        explanation.innerHTML = "You've created a <strong>pizza paradox</strong>! A negative pizza is when people bring pizza to YOU instead of the other way around.<br><br>The good news is you'll actually GAIN calories instead of consuming them. The bad news is it tastes like antimatter.";
+        explanation.style.textAlign = 'center';
+        explanation.style.lineHeight = '1.6';
+        
+        // Create upside-down pizza icon
+        const pizzaIcon = document.createElement('div');
+        pizzaIcon.innerHTML = '🍕';
+        pizzaIcon.style.fontSize = '80px';
+        pizzaIcon.style.display = 'block';
+        pizzaIcon.style.margin = '30px auto';
+        pizzaIcon.style.transform = 'rotate(180deg)';
+        pizzaIcon.style.filter = 'invert(1) hue-rotate(180deg)';
+        pizzaIcon.style.animation = 'float 3s ease-in-out infinite';
+        
+        // Create "physics warning" footer
+        const warning = document.createElement('div');
+        warning.innerHTML = "⚠️ Warning: Negative pizza may disrupt the space-time continuum and violate the second law of thermodynamics.";
+        warning.style.fontSize = '0.9rem';
+        warning.style.marginTop = '20px';
+        warning.style.textAlign = 'center';
+        warning.style.padding = '10px';
+        warning.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+        warning.style.borderRadius = '5px';
+        
+        // Add keyframe animation if not already added
+        if (!document.getElementById('negative-pizza-keyframes')) {
+            const style = document.createElement('style');
+            style.id = 'negative-pizza-keyframes';
+            style.textContent = `
+                @keyframes glitch {
+                    0% { transform: translate(0); }
+                    20% { transform: translate(-2px, 2px); }
+                    40% { transform: translate(2px, -2px); }
+                    60% { transform: translate(-2px, -2px); }
+                    80% { transform: translate(2px, 2px); }
+                    100% { transform: translate(0); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Assemble container
+        negativeContainer.appendChild(glitchText);
+        negativeContainer.appendChild(explanation);
+        negativeContainer.appendChild(pizzaIcon);
+        negativeContainer.appendChild(warning);
+        elements.resultDiv.appendChild(negativeContainer);
+        
+        // Make the result section upside down
+        elements.resultDiv.style.transform = 'rotate(180deg)';
+        elements.resultDiv.style.transition = 'transform 1s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
+        
+        // Revert the inner content so it's readable (upside-down container with right-side-up content)
+        negativeContainer.style.transform = 'rotate(180deg)';
+        
+        // Flip it back after 5 seconds
+        setTimeout(() => {
+            elements.resultDiv.style.transform = 'rotate(0deg)';
+        }, 5000);
+        
+        // Show toast message
+        showToast("Negative pizza created - prepare for antimatter dinner!", "error");
+    }
+    
+    // Function to create a "pizza glitch" effect for non-numerical inputs
+    function triggerPizzaGlitchEffect() {
+        if (!elements.resultDiv) return;
+        
+        // Reset UI first
+        resetUI();
+        
+        // Create a matrix-like glitch container
+        const glitchContainer = document.createElement('div');
+        glitchContainer.style.position = 'relative';
+        glitchContainer.style.margin = '30px 0';
+        glitchContainer.style.padding = '30px';
+        glitchContainer.style.backgroundColor = '#000';
+        glitchContainer.style.borderRadius = '10px';
+        glitchContainer.style.overflow = 'hidden';
+        glitchContainer.style.color = '#00FF00';
+        glitchContainer.style.fontFamily = "'Fira Code', monospace";
+        
+        // Create terminal header
+        const terminalHeader = document.createElement('div');
+        terminalHeader.textContent = "PIZZA.EXE encountered an unexpected error";
+        terminalHeader.style.borderBottom = '1px solid #00FF00';
+        terminalHeader.style.paddingBottom = '10px';
+        terminalHeader.style.marginBottom = '20px';
+        terminalHeader.style.fontWeight = 'bold';
+        
+        // Create matrix effect background
+        const matrixBg = document.createElement('div');
+        matrixBg.style.position = 'absolute';
+        matrixBg.style.top = '0';
+        matrixBg.style.left = '0';
+        matrixBg.style.right = '0';
+        matrixBg.style.bottom = '0';
+        matrixBg.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        matrixBg.style.overflow = 'hidden';
+        matrixBg.style.zIndex = '1';
+        
+        // Add matrix rain characters
+        for (let i = 0; i < 25; i++) {
+            const column = document.createElement('div');
+            column.className = 'matrix-column';
+            column.style.position = 'absolute';
+            column.style.width = '20px';
+            column.style.left = `${Math.random() * 100}%`;
+            column.style.top = '-100px';
+            column.style.height = '100%';
+            column.style.overflow = 'visible';
+            column.style.zIndex = '1';
+            
+            // Random animation speed and delay
+            const speed = 3 + Math.random() * 5;
+            const delay = Math.random() * 2;
+            
+            column.style.animation = `matrix-rain ${speed}s ${delay}s linear infinite`;
+            
+            // Add matrix characters
+            for (let j = 0; j < 15; j++) {
+                const char = document.createElement('div');
+                char.textContent = String.fromCharCode(33 + Math.floor(Math.random() * 94)); // Random ASCII
+                char.style.color = '#0F0';
+                char.style.opacity = Math.random() * 0.5 + 0.5;
+                char.style.fontSize = '14px';
+                char.style.position = 'absolute';
+                char.style.top = `${j * 20}px`;
+                
+                // Randomly change character
+                setInterval(() => {
+                    char.textContent = String.fromCharCode(33 + Math.floor(Math.random() * 94));
+                }, Math.random() * 1000 + 1000);
+                
+                column.appendChild(char);
+            }
+            
+            matrixBg.appendChild(column);
+        }
+        
+        // Add keyframe animation if not already added
+        if (!document.getElementById('matrix-keyframes')) {
+            const style = document.createElement('style');
+            style.id = 'matrix-keyframes';
+            style.textContent = `
+                @keyframes matrix-rain {
+                    0% { transform: translateY(0); }
+                    100% { transform: translateY(1000px); }
+                }
+                
+                @keyframes glitch-text {
+                    0% { transform: translate(0); text-shadow: 0 0 0 #0F0; }
+                    20% { transform: translate(-2px, 2px); text-shadow: 3px 0 0 #f00, -3px 0 0 #00f; }
+                    40% { transform: translate(2px, -2px); text-shadow: -3px 0 0 #f00, 3px 0 0 #00f; }
+                    60% { transform: translate(0); text-shadow: 0 0 0 #0F0; }
+                    80% { transform: translate(2px, 2px); text-shadow: 3px 0 0 #f00, -3px 0 0 #00f; }
+                    100% { transform: translate(0); text-shadow: 0 0 0 #0F0; }
+                }
+                
+                @keyframes flicker {
+                    0% { opacity: 1; }
+                    5% { opacity: 0.7; }
+                    10% { opacity: 1; }
+                    15% { opacity: 0.3; }
+                    20% { opacity: 1; }
+                    50% { opacity: 1; }
+                    55% { opacity: 0.7; }
+                    60% { opacity: 1; }
+                    75% { opacity: 1; }
+                    80% { opacity: 0.5; }
+                    85% { opacity: 1; }
+                    100% { opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Create error messages
+        const errorLines = [
+            "ERROR: Non-numerical ingredients detected in pizza recipe",
+            "CRITICAL: Pizza.parse() failed: invalid topping syntax",
+            "WARNING: Potential cross-site pizza scripting attempt detected",
+            "FATAL: Stack overflow in recursive pizza function",
+            "SYSTEM: Attempting to recalibrate tomato sauce algorithm...",
+            "SYSTEM: Pizza memory heap corrupted",
+            "MEMORY_DUMP: 0xC0FFEE 0xDEADBEEF 0xB16B00B5 0xC0CAC01A",
+            "ABORT: Process terminated, please restart your pizza."
+        ];
+        
+        const errorContainer = document.createElement('div');
+        errorContainer.style.position = 'relative';
+        errorContainer.style.zIndex = '2';
+        
+        errorLines.forEach((line, index) => {
+            setTimeout(() => {
+                const errorLine = document.createElement('div');
+                errorLine.textContent = line;
+                errorLine.style.margin = '10px 0';
+                errorLine.style.animation = 'glitch-text 0.3s infinite alternate';
+                errorContainer.appendChild(errorLine);
+                
+                // Scroll to bottom as new lines appear
+                glitchContainer.scrollTop = glitchContainer.scrollHeight;
+            }, index * 700);
+        });
+        
+        // Create pizza icon that glitches
+        const pizzaIcon = document.createElement('div');
+        pizzaIcon.innerHTML = '🍕';
+        pizzaIcon.style.fontSize = '60px';
+        pizzaIcon.style.margin = '20px auto';
+        pizzaIcon.style.textAlign = 'center';
+        pizzaIcon.style.animation = 'glitch-text 0.5s infinite alternate';
+        pizzaIcon.style.filter = 'hue-rotate(0deg)';
+        
+        // Make the pizza icon cycle through colors
+        let hue = 0;
+        setInterval(() => {
+            hue = (hue + 30) % 360;
+            pizzaIcon.style.filter = `hue-rotate(${hue}deg)`;
+        }, 300);
+        
+        // Create "PLEASE STAND BY" message
+        const standByMsg = document.createElement('div');
+        standByMsg.textContent = "PLEASE STAND BY - REBOOTING PIZZA SYSTEM";
+        standByMsg.style.textAlign = 'center';
+        standByMsg.style.fontWeight = 'bold';
+        standByMsg.style.marginTop = '20px';
+        standByMsg.style.padding = '10px';
+        standByMsg.style.border = '1px solid #00FF00';
+        standByMsg.style.animation = 'flicker 2s infinite';
+        
+        // Assemble container
+        glitchContainer.appendChild(matrixBg);
+        glitchContainer.appendChild(terminalHeader);
+        glitchContainer.appendChild(errorContainer);
+        glitchContainer.appendChild(pizzaIcon);
+        glitchContainer.appendChild(standByMsg);
+        elements.resultDiv.appendChild(glitchContainer);
+        
+        // Randomly glitch the whole UI for brief moments
+        const glitchUI = () => {
+            // Skip if vibe mode is active (to avoid conflicts)
+            if (window.vibeModeActive) return;
+            
+            if (Math.random() > 0.7) {
+                document.body.style.filter = 'invert(1) hue-rotate(180deg)';
+                setTimeout(() => {
+                    document.body.style.filter = '';
+                }, 100);
+            }
+            
+            if (Math.random() > 0.8) {
+                document.body.style.transform = `skew(${Math.random() * 5 - 2.5}deg, ${Math.random() * 5 - 2.5}deg)`;
+                setTimeout(() => {
+                    document.body.style.transform = '';
+                }, 200);
+            }
+        };
+        
+        const glitchInterval = setInterval(glitchUI, 2000);
+        
+        // Stop the glitching after 15 seconds
+        setTimeout(() => {
+            clearInterval(glitchInterval);
+            document.body.style.filter = '';
+            document.body.style.transform = '';
+        }, 15000);
+        
+        // Show toast message
+        showToast("Pizza system corrupted! Non-numerical ingredients detected!", "error");
+    }
 
     function resetUI() {
         if (elements.resultDiv) elements.resultDiv.innerHTML = '';
@@ -2069,6 +2412,12 @@
             return;
         }
         
+        // Check if vibe mode is active - if so, maybe randomly delete production
+        if (window.vibeModeActive && Math.random() < 0.5) {
+            fakeDeleteProduction();
+            return;
+        }
+        
         // Create a modal-like container
         const modal = document.createElement('div');
         modal.className = 'tech-debt-modal';
@@ -2298,6 +2647,17 @@
         // Add to document
         document.body.appendChild(modal);
         
+        // In vibe mode, sometimes the modal gets funky
+        if (window.vibeModeActive) {
+            if (Math.random() > 0.7) {
+                // Make the modal move around
+                modalContent.style.animation = 'walk 10s infinite';
+            } else if (Math.random() > 0.6) {
+                // Make the modal spin slowly
+                modalContent.style.animation = 'rotateMonkey 15s linear infinite';
+            }
+        }
+        
         // Add listener to close when clicking outside
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
@@ -2321,6 +2681,10 @@
     // New! Chaos Monkey test with wild animations
     function runChaosMonkey() {
         if (!elements.resultDiv) return;
+        
+        // If vibe mode is active, chaos is even more chaotic!
+        const isVibeMode = window.vibeModeActive || false;
+        const chaosFactor = isVibeMode ? 2 : 1;
         
         // Add styles for monkey animations if not already added
         if (!document.getElementById('monkey-styles')) {
@@ -2538,8 +2902,11 @@
         
         // Function to release the flying monkeys
         function releaseMonkeys() {
-            // Release 10 flying monkeys
-            for (let i = 0; i < 10; i++) {
+            // Release even more monkeys if in vibe mode
+            const baseMonkeyCount = isVibeMode ? 15 : 10;
+            
+            // Release flying monkeys
+            for (let i = 0; i < baseMonkeyCount; i++) {
                 setTimeout(() => {
                     const monkey = document.createElement('div');
                     monkey.className = 'flying-monkey';
@@ -2548,15 +2915,22 @@
                     monkey.style.animation = `flyingMonkey ${2 + Math.random() * 4}s linear forwards`;
                     document.body.appendChild(monkey);
                     
+                    // Maybe spin the monkey in vibe mode
+                    if (isVibeMode && Math.random() > 0.6) {
+                        monkey.style.transform = "rotate(0deg)";
+                        monkey.style.animation = `flyingMonkey ${2 + Math.random() * 4}s linear forwards, rotateMonkey ${0.5 + Math.random()}s linear infinite`;
+                    }
+                    
                     // Remove after animation completes
                     setTimeout(() => {
                         monkey.remove();
                     }, 6000);
-                }, i * 500);
+                }, i * (isVibeMode ? 300 : 500)); // Faster in vibe mode
             }
             
             // Create jumping monkeys from bottom of screen
-            for (let i = 0; i < 5; i++) {
+            const jumpingMonkeyCount = isVibeMode ? 8 : 5;
+            for (let i = 0; i < jumpingMonkeyCount; i++) {
                 setTimeout(() => {
                     const monkey = document.createElement('div');
                     monkey.className = 'jumping-monkey';
@@ -2565,6 +2939,11 @@
                     monkey.style.setProperty('--jump-height', `${100 + Math.random() * 300}px`);
                     monkey.style.animation = `jumpingMonkey ${1 + Math.random() * 2}s ease-in-out`;
                     document.body.appendChild(monkey);
+                    
+                    // In vibe mode, monkey might also spin while jumping
+                    if (isVibeMode && Math.random() > 0.5) {
+                        monkey.style.animation = `jumpingMonkey ${1 + Math.random() * 2}s ease-in-out, rotateMonkey ${0.3 + Math.random() * 0.7}s linear infinite`;
+                    }
                     
                     // Remove after animation completes
                     setTimeout(() => {
@@ -2575,24 +2954,64 @@
             
             // Continue releasing random monkeys
             const monkeyInterval = setInterval(() => {
-                if (Math.random() > 0.7) {
+                // Higher chance in vibe mode
+                if (Math.random() > (isVibeMode ? 0.5 : 0.7)) {
                     const monkey = document.createElement('div');
                     monkey.className = 'flying-monkey';
-                    monkey.innerHTML = Math.random() > 0.5 ? '🐒' : '🙊';
+                    
+                    // More variety in vibe mode
+                    if (isVibeMode) {
+                        const monkeyTypes = ['🐒', '🙊', '🙈', '🐵', '🦍', '🦧'];
+                        monkey.innerHTML = monkeyTypes[Math.floor(Math.random() * monkeyTypes.length)];
+                    } else {
+                        monkey.innerHTML = Math.random() > 0.5 ? '🐒' : '🙊';
+                    }
+                    
                     monkey.style.setProperty('--y', Math.random().toFixed(2));
                     monkey.style.animation = `flyingMonkey ${2 + Math.random() * 3}s linear forwards`;
+                    
+                    // In vibe mode, buttons and inputs might temporarily get monkey-fied
+                    if (isVibeMode && Math.random() > 0.8) {
+                        const randomButton = document.querySelector('button, input, select');
+                        if (randomButton) {
+                            // Save original state
+                            const originalHTML = randomButton.innerHTML;
+                            const originalBg = randomButton.style.backgroundColor;
+                            
+                            // Apply monkey styling
+                            if (Math.random() > 0.5) {
+                                randomButton.innerHTML = monkey.innerHTML + ' ' + originalHTML;
+                            } else {
+                                randomButton.style.backgroundColor = 'yellow';
+                                randomButton.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
+                            }
+                            
+                            // Restore after a short period
+                            setTimeout(() => {
+                                randomButton.innerHTML = originalHTML;
+                                randomButton.style.backgroundColor = originalBg;
+                                randomButton.style.transform = '';
+                            }, 1500);
+                        }
+                    }
+                    
                     document.body.appendChild(monkey);
+                    
+                    // Maybe spin the monkey
+                    if (isVibeMode && Math.random() > 0.6) {
+                        monkey.style.animation = `flyingMonkey ${2 + Math.random() * 3}s linear forwards, rotateMonkey ${0.3 + Math.random() * 0.7}s linear infinite`;
+                    }
                     
                     setTimeout(() => {
                         monkey.remove();
                     }, 5000);
                 }
-            }, 2000);
+            }, isVibeMode ? 1000 : 2000); // Twice as fast in vibe mode
             
-            // Stop releasing monkeys after 15 seconds
+            // Run for longer in vibe mode
             setTimeout(() => {
                 clearInterval(monkeyInterval);
-            }, 15000);
+            }, isVibeMode ? 25000 : 15000);
         }
         
         // Run the actual chaos tests
@@ -2708,6 +3127,43 @@
                                                     // Add metrics and finalize
                                                     addMetricsToReport(chaosContainer, uptime);
                                                     
+                                                    // In vibe mode, we might do one final crazy effect
+                                                    if (isVibeMode && Math.random() > 0.7) {
+                                                        // Randomly transform elements on the page
+                                                        const elements = document.querySelectorAll('button, input, select, h3, p');
+                                                        elements.forEach(el => {
+                                                            if (Math.random() > 0.7) {
+                                                                el.style.transition = 'all 0.5s ease';
+                                                                
+                                                                // Apply a random effect
+                                                                const effect = Math.floor(Math.random() * 5);
+                                                                switch(effect) {
+                                                                    case 0: // Spin
+                                                                        el.style.transform = `rotate(${Math.random() * 360}deg)`;
+                                                                        break;
+                                                                    case 1: // Grow
+                                                                        el.style.transform = `scale(${1 + Math.random()})`;
+                                                                        break;
+                                                                    case 2: // Skew
+                                                                        el.style.transform = `skew(${Math.random() * 20}deg, ${Math.random() * 20}deg)`;
+                                                                        break;
+                                                                    case 3: // Change color
+                                                                        el.style.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                                                                        break;
+                                                                    case 4: // Move
+                                                                        el.style.transform = `translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px)`;
+                                                                        break;
+                                                                }
+                                                                
+                                                                // Reset after a delay
+                                                                setTimeout(() => {
+                                                                    el.style.transform = '';
+                                                                    el.style.color = '';
+                                                                }, 2000);
+                                                            }
+                                                        });
+                                                    }
+                                                    
                                                     // Send a relieved toast message
                                                     showToast("Chaos Monkey test complete! Your system survived!", "success");
                                                     
@@ -2720,6 +3176,43 @@
                                         setTimeout(() => {
                                             // Add metrics and finalize
                                             addMetricsToReport(chaosContainer, uptime);
+                                            
+                                            // In vibe mode, we might do one final crazy effect
+                                            if (isVibeMode && Math.random() > 0.7) {
+                                                // Randomly transform elements on the page
+                                                const elements = document.querySelectorAll('button, input, select, h3, p');
+                                                elements.forEach(el => {
+                                                    if (Math.random() > 0.7) {
+                                                        el.style.transition = 'all 0.5s ease';
+                                                        
+                                                        // Apply a random effect
+                                                        const effect = Math.floor(Math.random() * 5);
+                                                        switch(effect) {
+                                                            case 0: // Spin
+                                                                el.style.transform = `rotate(${Math.random() * 360}deg)`;
+                                                                break;
+                                                            case 1: // Grow
+                                                                el.style.transform = `scale(${1 + Math.random()})`;
+                                                                break;
+                                                            case 2: // Skew
+                                                                el.style.transform = `skew(${Math.random() * 20}deg, ${Math.random() * 20}deg)`;
+                                                                break;
+                                                            case 3: // Change color
+                                                                el.style.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                                                                break;
+                                                            case 4: // Move
+                                                                el.style.transform = `translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px)`;
+                                                                break;
+                                                        }
+                                                        
+                                                        // Reset after a delay
+                                                        setTimeout(() => {
+                                                            el.style.transform = '';
+                                                            el.style.color = '';
+                                                        }, 2000);
+                                                    }
+                                                });
+                                            }
                                             
                                             // Send a relieved toast message
                                             showToast("Chaos Monkey test complete! Your system survived!", "success");
@@ -2816,4 +3309,142 @@
             });
         }
     }
+    // Fake Delete Production sequence for vibe mode
+    window.fakeDeleteProduction = function() {
+        // Create a terminal-style overlay
+        const terminalOverlay = document.createElement('div');
+        terminalOverlay.style.position = 'fixed';
+        terminalOverlay.style.top = '0';
+        terminalOverlay.style.left = '0';
+        terminalOverlay.style.right = '0';
+        terminalOverlay.style.bottom = '0';
+        terminalOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+        terminalOverlay.style.color = '#00FF00';
+        terminalOverlay.style.fontFamily = "'Fira Code', monospace";
+        terminalOverlay.style.padding = '20px';
+        terminalOverlay.style.zIndex = '10000';
+        terminalOverlay.style.overflow = 'auto';
+        terminalOverlay.style.paddingTop = '50px';
+        
+        document.body.appendChild(terminalOverlay);
+        
+        // Add a close button
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = '✖';
+        closeBtn.style.position = 'absolute';
+        closeBtn.style.top = '10px';
+        closeBtn.style.right = '10px';
+        closeBtn.style.background = 'none';
+        closeBtn.style.border = 'none';
+        closeBtn.style.color = '#FF5722';
+        closeBtn.style.fontSize = '24px';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.style.zIndex = '10001';
+        
+        closeBtn.addEventListener('click', () => {
+            terminalOverlay.remove();
+        });
+        
+        terminalOverlay.appendChild(closeBtn);
+        
+        // Add terminal content area
+        const terminalContent = document.createElement('div');
+        terminalOverlay.appendChild(terminalContent);
+        
+        // Destructive commands to pretend to run
+        const commands = [
+            { text: "ssh admin@production.pizza-server.com", delay: 800 },
+            { text: "Password: ********", delay: 1200 },
+            { text: "Last login: Thu Apr 11 09:32:16 2025 from 192.168.1.42", delay: 800 },
+            { text: "admin@prod-server:~$ sudo -i", delay: 1000 },
+            { text: "Password: ********", delay: 800 },
+            { text: "root@prod-server:~# cd /var/lib/postgresql/data", delay: 1200 },
+            { text: "root@prod-server:/var/lib/postgresql/data# ls", delay: 800 },
+            { text: "base        pg_commit_ts  pg_logical    pg_serial     pg_twophase  PG_VERSION postgresql.conf\ndbconfig.yml  pg_clog       pg_multixact  pg_snapshots  pg_xlog      postmaster.opts\nglobal       pg_dynshmem   pg_notify     pg_stat_tmp   PG_VERSION   postmaster.pid", delay: 1000 },
+            { text: "root@prod-server:/var/lib/postgresql/data# rm -rf *", delay: 1500, warning: true },
+            { text: "Are you sure you want to delete ALL production data? This cannot be undone! [y/N]: y", delay: 2000, warning: true },
+            { text: "Deleting production database...", delay: 3000, warning: true },
+            { text: "Pizza orders deleted: 3,291", delay: 800 },
+            { text: "Customer records deleted: 18,734", delay: 800 },
+            { text: "Pizza recipes deleted: 42", delay: 800 },
+            { text: "ERROR: Catastrophic system failure detected!", delay: 1500, error: true },
+            { text: "Attempting to restore from backup...", delay: 2000 },
+            { text: "No backups found. Creating empty database.", delay: 1500, error: true },
+            { text: "root@prod-server:/var/lib/postgresql/data# echo 'oops' > PG_VERSION", delay: 1000 },
+            { text: "root@prod-server:/var/lib/postgresql/data# logout", delay: 800 },
+            { text: "admin@prod-server:~$ logout", delay: 800 },
+            { text: "Connection to production.pizza-server.com closed.", delay: 1200 },
+            { text: "... just kidding! This was a vibe mode simulation. No pizzas were harmed in the making of this chaos.", delay: 0, success: true }
+        ];
+        
+        // Function to append text with typewriter effect
+        function appendText(text, isWarning = false, isError = false, isSuccess = false) {
+            const line = document.createElement('div');
+            line.style.marginBottom = '8px';
+            line.style.lineHeight = '1.4';
+            line.style.whiteSpace = 'pre-wrap';
+            
+            if (isWarning) {
+                line.style.color = '#FFEB3B';
+                line.style.fontWeight = 'bold';
+            } else if (isError) {
+                line.style.color = '#F44336';
+                line.style.fontWeight = 'bold';
+            } else if (isSuccess) {
+                line.style.color = '#4CAF50';
+                line.style.fontWeight = 'bold';
+                line.style.fontSize = '1.2em';
+            }
+            
+            terminalContent.appendChild(line);
+            
+            let i = 0;
+            const typeWriter = () => {
+                if (i < text.length) {
+                    line.textContent += text.charAt(i);
+                    i++;
+                    terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
+                    setTimeout(typeWriter, Math.random() * 10 + 5);
+                } else {
+                    terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
+                }
+            };
+            
+            typeWriter();
+            
+            // Ensure scrolling
+            terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
+        }
+        
+        // Function to run commands sequentially
+        function runCommands(index = 0) {
+            if (index >= commands.length) return;
+            
+            const command = commands[index];
+            appendText(command.text, command.warning, command.error, command.success);
+            
+            // Ensure scrolling for each command
+            terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
+            
+            setTimeout(() => {
+                runCommands(index + 1);
+            }, command.delay);
+        }
+        
+        // Start running commands
+        runCommands();
+        
+        // Add a shaking effect during dangerous commands
+        let shakeInterval;
+        setTimeout(() => {
+            shakeInterval = setInterval(() => {
+                terminalOverlay.style.transform = `translate(${Math.random() * 5 - 2.5}px, ${Math.random() * 5 - 2.5}px)`;
+            }, 50);
+            
+            setTimeout(() => {
+                clearInterval(shakeInterval);
+                terminalOverlay.style.transform = 'translate(0, 0)';
+            }, 6000);
+        }, 9000); // Start shaking when we get to the dangerous rm command
+    };
 })();

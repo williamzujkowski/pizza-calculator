@@ -400,9 +400,35 @@
             box-shadow: var(--shadow);
             position: relative;
             overflow: hidden;
-            min-width: 120px;
+            min-width: 180px;
             position: relative;
             overflow: hidden;
+        }
+        
+        /* Primary action button styling */
+        .primary-action-button {
+            background-color: var(--accent-color);
+            font-size: 1.2rem;
+            padding: calc(var(--space-md) + 4px) calc(var(--space-xl) + 10px);
+            min-width: 220px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 12px rgba(255, 87, 34, 0.3);
+            text-transform: uppercase;
+        }
+        
+        .primary-action-button:hover {
+            background-color: var(--accent-dark) !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 16px rgba(255, 87, 34, 0.4) !important;
+        }
+        
+        .primary-action-button:active {
+            transform: translateY(-1px) !important;
+        }
+        
+        .primary-action-button i {
+            font-size: 1.4rem;
         }
 
         button::after {
@@ -1195,12 +1221,22 @@
             .button-group {
                 justify-content: center;
                 gap: var(--space-sm);
+                flex-direction: column;
+                align-items: center;
             }
             
             button {
                 padding: var(--space-sm) var(--space-md);
                 font-size: var(--font-size-sm);
-                min-width: 100px;
+                min-width: 100%;
+                max-width: 300px;
+            }
+            
+            /* Keep primary action button prominent on mobile */
+            .primary-action-button {
+                order: -1;
+                font-size: 1.1rem;
+                padding: calc(var(--space-md) + 2px) var(--space-md);
             }
 
             .metrics-section {
@@ -1660,8 +1696,8 @@
                     </div>
 
                     <div class="button-group">
-                        <button type="button" onclick="calculatePizzas()" class="tooltip">
-                            <i class="fas fa-calculator"></i> Calculate
+                        <button type="button" onclick="calculatePizzas()" class="tooltip primary-action-button">
+                            <i class="fas fa-calculator"></i> Calculate Pizza
                             <span class="tooltip-text">Run the pizza algorithm</span>
                         </button>
                         <button type="button" onclick="downloadReport()" class="button-secondary tooltip">
