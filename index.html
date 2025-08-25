@@ -1609,6 +1609,37 @@
             80% { transform: translate(3px, -2px); }
             90% { transform: translate(-3px, -1px); }
         }
+
+        /* Konami Code Effects */
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        @keyframes fall {
+            0% { 
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% { 
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Secret Pizza Mode Indicator */
+        .secret-mode-active {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffe66d);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            z-index: 10000;
+            animation: pulse 1s infinite;
+        }
     </style>
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -1816,6 +1847,16 @@
                 // Occasionally add glitch effects to text
                 if (Math.random() < 0.05) {
                     glitchRandomText();
+                }
+                
+                // Occasionally make buttons do unexpected things
+                if (Math.random() < 0.03) {
+                    randomButtonChaos();
+                }
+                
+                // Occasionally add pizza facts
+                if (Math.random() < 0.08) {
+                    showRandomPizzaFact();
                 }
             }, 5000);
         }
@@ -2401,6 +2442,113 @@
             
             observer.observe(document.body, { childList: true, subtree: true });
         });
+        // New vibe mode helper functions
+        function randomButtonChaos() {
+            const buttons = document.querySelectorAll('button');
+            if (buttons.length === 0) return;
+            
+            const randomBtn = buttons[Math.floor(Math.random() * buttons.length)];
+            const chaos = Math.random();
+            
+            if (chaos < 0.3) {
+                // Button runs away from cursor
+                randomBtn.style.transition = 'transform 0.3s';
+                randomBtn.addEventListener('mouseenter', function runAway() {
+                    const x = (Math.random() - 0.5) * 100;
+                    const y = (Math.random() - 0.5) * 100;
+                    this.style.transform = `translate(${x}px, ${y}px)`;
+                    setTimeout(() => {
+                        this.style.transform = '';
+                        this.removeEventListener('mouseenter', runAway);
+                    }, 3000);
+                });
+            } else if (chaos < 0.6) {
+                // Button changes text temporarily
+                const originalText = randomBtn.textContent;
+                const funnyTexts = ['404 Button Not Found', 'Click if you dare', 'I\'m on break', 
+                                   'Try again later', '¯\\_(ツ)_/¯', 'Button.exe stopped', 
+                                   'Loading...', 'Out for lunch', 'Press Alt+F4'];
+                randomBtn.textContent = funnyTexts[Math.floor(Math.random() * funnyTexts.length)];
+                setTimeout(() => {
+                    randomBtn.textContent = originalText;
+                }, 5000);
+            } else {
+                // Button multiplies when clicked
+                randomBtn.addEventListener('click', function multiply() {
+                    const clone = this.cloneNode(true);
+                    clone.style.position = 'absolute';
+                    clone.style.left = Math.random() * window.innerWidth + 'px';
+                    clone.style.top = Math.random() * window.innerHeight + 'px';
+                    clone.textContent = '🍕 CLONE 🍕';
+                    document.body.appendChild(clone);
+                    setTimeout(() => clone.remove(), 3000);
+                    this.removeEventListener('click', multiply);
+                }, { once: true });
+            }
+        }
+        
+        function showRandomPizzaFact() {
+            const facts = [
+                "🍕 Fun Fact: The first computer bug was actually a moth trapped in a relay",
+                "🍕 Did you know? Pizza was invented before the internet, but only barely",
+                "🍕 Breaking: Scientists confirm pizza is a flat circle (controversial!)",
+                "🍕 Alert: Your code has more bugs than a pizza has toppings",
+                "🍕 Study shows 9/10 developers prefer pizza over sleep",
+                "🍕 Warning: Pizza overflow detected in stomach buffer",
+                "🍕 Fact: The average developer consumes their weight in pizza annually",
+                "🍕 News: Pineapple on pizza causes more debates than tabs vs spaces",
+                "🍕 Discovery: Pizza grease improves keyboard performance by 0%",
+                "🍕 Research: Debugging is 90% pizza, 10% crying, 100% math issues"
+            ];
+            
+            const fact = facts[Math.floor(Math.random() * facts.length)];
+            const factDiv = document.createElement('div');
+            factDiv.style.position = 'fixed';
+            factDiv.style.bottom = '20px';
+            factDiv.style.left = '50%';
+            factDiv.style.transform = 'translateX(-50%)';
+            factDiv.style.background = 'linear-gradient(45deg, #ff6b6b, #4ecdc4)';
+            factDiv.style.color = 'white';
+            factDiv.style.padding = '15px 25px';
+            factDiv.style.borderRadius = '25px';
+            factDiv.style.fontSize = '14px';
+            factDiv.style.fontWeight = 'bold';
+            factDiv.style.zIndex = '9999';
+            factDiv.style.animation = 'slideInUp 0.5s ease';
+            factDiv.textContent = fact;
+            
+            document.body.appendChild(factDiv);
+            setTimeout(() => {
+                factDiv.style.animation = 'slideOutDown 0.5s ease';
+                setTimeout(() => factDiv.remove(), 500);
+            }, 4000);
+        }
+
+        // Add CSS animations for pizza facts
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes slideInUp {
+                from {
+                    transform: translate(-50%, 100px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translate(-50%, 0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOutDown {
+                from {
+                    transform: translate(-50%, 0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translate(-50%, 100px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(styleSheet);
     </script>
 </body>
 

@@ -62,6 +62,48 @@
     // Initialize element cache
     elements.init();
 
+    // Konami Code Easter Egg
+    let konamiSequence = [];
+    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    
+    document.addEventListener('keydown', (e) => {
+        konamiSequence.push(e.key);
+        konamiSequence = konamiSequence.slice(-10);
+        
+        if (konamiSequence.join(',') === konamiCode.join(',')) {
+            activateUltimatePizzaMode();
+            konamiSequence = [];
+        }
+    });
+
+    function activateUltimatePizzaMode() {
+        showToast('🎮 ULTIMATE PIZZA MODE ACTIVATED! 🍕', 'success');
+        document.body.style.animation = 'rainbow 2s linear infinite';
+        
+        // Make all pizzas free!
+        const budgetElements = document.querySelectorAll('[data-budget]');
+        budgetElements.forEach(el => {
+            el.textContent = '$0.00 (KONAMI DISCOUNT!)';
+        });
+        
+        // Add pizza rain
+        for (let i = 0; i < 50; i++) {
+            setTimeout(() => {
+                const pizza = document.createElement('div');
+                pizza.innerHTML = '🍕';
+                pizza.style.position = 'fixed';
+                pizza.style.left = Math.random() * 100 + '%';
+                pizza.style.top = '-50px';
+                pizza.style.fontSize = '30px';
+                pizza.style.zIndex = '9999';
+                pizza.style.pointerEvents = 'none';
+                pizza.style.animation = `fall ${3 + Math.random() * 2}s linear`;
+                document.body.appendChild(pizza);
+                setTimeout(() => pizza.remove(), 5000);
+            }, i * 100);
+        }
+    }
+
     // Local storage
     function loadPizzaDefaults() {
         const storage = {
@@ -983,7 +1025,40 @@
             { text: "Pizza is compiling, please wait...", delay: 1000 },
             { text: "Waiting for pizza CI pipeline to complete...", delay: 900 },
             { text: "Creating AWS Lambda functions to slice pizza...", delay: 800 },
-            { text: "Pizzas deployed successfully!", delay: 1500 }
+            { text: "Pizzas deployed successfully!", delay: 1500 },
+            { text: "Debugging infinite pizza loop...", delay: 800 },
+            { text: "Migrating legacy toppings to microservices...", delay: 900 },
+            { text: "Performing A/B test on crust thickness...", delay: 700 },
+            { text: "Refactoring spaghetti code (and adding meatballs)...", delay: 1000 },
+            { text: "Found a bug in the tomato sauce module...", delay: 800 },
+            { text: "Rolling back cheese deployment (lactose incident)...", delay: 900 },
+            { text: "Applying machine learning to predict pizza consumption...", delay: 1100 },
+            { text: "Kubernetes pods are scaling (pizza pods, that is)...", delay: 900 },
+            { text: "Redis cache warming with hot pizza data...", delay: 700 },
+            { text: "GraphQL query for optimal topping combinations...", delay: 800 },
+            { text: "WebSocket connection to pizza oven established...", delay: 600 },
+            { text: "Running npm audit... 47,293 vulnerabilities found (ignoring)...", delay: 1200 },
+            { text: "Implementing OAuth2 for pizza authentication...", delay: 800 },
+            { text: "Garbage collecting old pizza crusts...", delay: 700 },
+            { text: "JIT compiling pizza preferences...", delay: 600 },
+            { text: "Lazy loading extra cheese modules...", delay: 800 },
+            { text: "Mocking pizza API responses for unit tests...", delay: 900 },
+            { text: "Provisioning pizza infrastructure as code...", delay: 1000 },
+            { text: "Establishing peer-to-peer pizza network...", delay: 800 },
+            { text: "Applying CSS-in-Pizza styling...", delay: 700 },
+            { text: "Minifying pizza for production...", delay: 600 },
+            { text: "Tree-shaking unused toppings...", delay: 800 },
+            { text: "Hot-reloading pizza modules...", delay: 700 },
+            { text: "Transpiling ES6 Pizza to ES5 for legacy ovens...", delay: 900 },
+            { text: "Pizza service mesh configuring...", delay: 800 },
+            { text: "Implementing pizza circuit breaker pattern...", delay: 1000 },
+            { text: "Rate limiting pizza requests (429 Too Many Pizzas)...", delay: 900 },
+            { text: "Pizza canary deployment in progress...", delay: 800 },
+            { text: "Blue-green pizza deployment switching...", delay: 700 },
+            { text: "Pizza telemetry data collecting...", delay: 600 },
+            { text: "Implementing pizza CQRS pattern...", delay: 900 },
+            { text: "Pizza event sourcing enabled...", delay: 800 },
+            { text: "Applying pizza saga pattern for distributed toppings...", delay: 1100 }
         ];
 
         let stepIndex = 0;
