@@ -1,3525 +1,1629 @@
-// pizza_calc.js
+// PizzaCalc Pro™ Enterprise Edition
+// Professional Pizza Resource Management System
+// Version 2.0.1 - Stable Release
 
-(function () {
-    if (!document.getElementById('pizzaForm')) {
-        return;
-    }
-
-    // Constants
-    const SLICES_PER_PIZZA = 8;
-    const DEFAULT_ATTENDEES = 5;
-    const DEFAULT_SLICES_PER_PERSON = 3;
-    const DEFAULT_HOURS_DEBUGGING = 2;
-    const ENTERPRISE_THRESHOLD = 42;
-    const PIZZA_STYLES = {
-        NY: "1",
-        DETROIT: "0.5",
-        CHICAGO: "0.6",
-        CALIFORNIA: "2",
-        HOT_POCKETS: "3",
-        BLOCKCHAIN: "100",
-        CLOUD: "cloud",
-        PINEAPPLE: "pineapple",
-        QUANTUM: "quantum" // New quantum pizza option
-    };
-
-    // State
-    let calculationCompleted = false;
-    let pizzaReport = "";
-
-    // DOM elements - cache references for better performance
-    const elements = {
-        // Initialize with null values
-        attendeesInput: null,
-        pizzaTypeInput: null,
-        hoursDebuggingInput: null,
-        slicesPerPersonInput: null,
-        resultDiv: null,
-        emailPromptSection: null,
-        progressBar: null,
-        progressLabel: null,
-        formFieldset: null,
-        toast: null,
-        downloadLink: null,
-        
-        // Initialize function to cache all elements
-        init: function() {
-            this.attendeesInput = document.getElementById('attendees');
-            this.pizzaTypeInput = document.getElementById('pizzaType');
-            this.hoursDebuggingInput = document.getElementById('hoursDebugging');
-            this.slicesPerPersonInput = document.getElementById('slicesPerPerson');
-            this.resultDiv = document.getElementById('result');
-            this.emailPromptSection = document.getElementById('emailPromptSection');
-            this.progressBar = document.getElementById('progressBar');
-            this.progressLabel = document.getElementById('progressLabel');
-            this.formFieldset = document.querySelector('#pizzaForm fieldset');
-            this.toast = document.getElementById('toast');
-            this.downloadLink = document.getElementById('downloadLink');
-            return this;
+(function() {
+    'use strict';
+    
+    // Global madness tracking
+    let madnessLevel = 0;
+    let calculationCount = 0;
+    let totalTimeSpent = 0;
+    let startTime = Date.now();
+    let totalPizzasOrdered = 0;
+    let totalBudgetSpent = 0;
+    
+    // Achievement System
+    const achievements = {
+        firstCalculation: { 
+            id: 'first_calc',
+            name: 'Hello World', 
+            description: 'Successfully compiled your first pizza order',
+            icon: '👋',
+            unlocked: false
+        },
+        tenCalculations: {
+            id: 'ten_calcs',
+            name: 'For Loop Master',
+            description: 'Iterated through 10 pizza calculations',
+            icon: '🔁',
+            unlocked: false
+        },
+        fiftyPizzas: {
+            id: 'fifty_pizzas',
+            name: 'Stack Overflow',
+            description: 'Ordered 50+ pizzas total (hope you have the storage)',
+            icon: '📚',
+            unlocked: false
+        },
+        bigSpender: {
+            id: 'big_spender',
+            name: 'Enterprise License',
+            description: 'Spent over $500 on pizza (expense report required)',
+            icon: '💳',
+            unlocked: false
+        },
+        madnessReached: {
+            id: 'madness_5',
+            name: 'Undefined Behavior',
+            description: 'System stability questionable (madness level 5)',
+            icon: '🤪',
+            unlocked: false
+        },
+        totalChaos: {
+            id: 'madness_10',
+            name: 'Kernel Panic',
+            description: 'Complete system failure achieved',
+            icon: '💀',
+            unlocked: false
+        },
+        pizzaParty: {
+            id: 'party_size',
+            name: 'Scrum Master',
+            description: 'Calculated for 20+ team members',
+            icon: '🎉',
+            unlocked: false
+        },
+        allNighter: {
+            id: 'hackathon',
+            name: 'git push --force',
+            description: 'Ordered pizza for a 24-hour session',
+            icon: '🌙',
+            unlocked: false
+        },
+        minMaxer: {
+            id: 'min_max',
+            name: 'Edge Case Tester',
+            description: 'Tested with 1 person and 500 people',
+            icon: '🧪',
+            unlocked: false
+        },
+        speedRunner: {
+            id: 'speed_run',
+            name: 'Agile Developer',
+            description: 'Completed 5 calculations in 30 seconds',
+            icon: '⚡',
+            unlocked: false
+        },
+        longSession: {
+            id: 'long_session',
+            name: 'Memory Leak',
+            description: 'Used calculator for over 5 minutes straight',
+            icon: '⏰',
+            unlocked: false
+        },
+        partyPizza: {
+            id: 'party_pizza',
+            name: 'Microservices Architecture',
+            description: 'Selected party size pizza (distributed system)',
+            icon: '🍕',
+            unlocked: false
+        },
+        hungryCrew: {
+            id: 'hungry_crew',
+            name: 'Buffer Overflow',
+            description: 'Set hunger to critical post-deploy stress',
+            icon: '🍖',
+            unlocked: false
+        },
+        resetMaster: {
+            id: 'reset_master',
+            name: 'git reset --hard',
+            description: 'Reset the form 10 times (commitment issues)',
+            icon: '♻️',
+            unlocked: false
+        },
+        pizzaProphet: {
+            id: 'pizza_prophet',
+            name: 'Machine Learning Expert',
+            description: 'The system learned your preferences',
+            icon: '🔮',
+            unlocked: false
         }
     };
     
-    // Initialize element cache
-    elements.init();
-
-    // Konami Code Easter Egg
-    let konamiSequence = [];
-    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    let resetCount = 0;
+    let speedRunStart = Date.now();
+    let speedRunCount = 0;
+    let testedMin = false;
+    let testedMax = false;
     
-    document.addEventListener('keydown', (e) => {
-        konamiSequence.push(e.key);
-        konamiSequence = konamiSequence.slice(-10);
+    // Check and unlock achievements
+    function checkAchievements(context) {
+        const unlocked = [];
         
-        if (konamiSequence.join(',') === konamiCode.join(',')) {
-            activateUltimatePizzaMode();
-            konamiSequence = [];
+        // First calculation
+        if (!achievements.firstCalculation.unlocked && calculationCount === 1) {
+            achievements.firstCalculation.unlocked = true;
+            achievements.firstCalculation.unlockedAt = new Date().toISOString();
+            unlocked.push(achievements.firstCalculation);
         }
-    });
-
-    function activateUltimatePizzaMode() {
-        showToast('🎮 ULTIMATE PIZZA MODE ACTIVATED! 🍕', 'success');
-        document.body.style.animation = 'rainbow 2s linear infinite';
         
-        // Make all pizzas free!
-        const budgetElements = document.querySelectorAll('[data-budget]');
-        budgetElements.forEach(el => {
-            el.textContent = '$0.00 (KONAMI DISCOUNT!)';
-        });
-        
-        // Add pizza rain
-        for (let i = 0; i < 50; i++) {
-            setTimeout(() => {
-                const pizza = document.createElement('div');
-                pizza.innerHTML = '🍕';
-                pizza.style.position = 'fixed';
-                pizza.style.left = Math.random() * 100 + '%';
-                pizza.style.top = '-50px';
-                pizza.style.fontSize = '30px';
-                pizza.style.zIndex = '9999';
-                pizza.style.pointerEvents = 'none';
-                pizza.style.animation = `fall ${3 + Math.random() * 2}s linear`;
-                document.body.appendChild(pizza);
-                setTimeout(() => pizza.remove(), 5000);
-            }, i * 100);
+        // Ten calculations
+        if (!achievements.tenCalculations.unlocked && calculationCount >= 10) {
+            achievements.tenCalculations.unlocked = true;
+            achievements.tenCalculations.unlockedAt = new Date().toISOString();
+            unlocked.push(achievements.tenCalculations);
         }
-    }
-
-    // Local storage
-    function loadPizzaDefaults() {
-        const storage = {
-            attendees: localStorage.getItem('pizzaAttendees') || DEFAULT_ATTENDEES,
-            slicesPerPerson: localStorage.getItem('pizzaSlicesPerPerson') || DEFAULT_SLICES_PER_PERSON,
-            hoursDebugging: localStorage.getItem('pizzaHoursDebugging') || DEFAULT_HOURS_DEBUGGING,
-            pizzaType: localStorage.getItem('pizzaType') || PIZZA_STYLES.NY
-        };
-
-        if (elements.attendeesInput) elements.attendeesInput.value = storage.attendees;
-        if (elements.slicesPerPersonInput) elements.slicesPerPersonInput.value = storage.slicesPerPerson;
-        if (elements.hoursDebuggingInput) elements.hoursDebuggingInput.value = storage.hoursDebugging;
-        if (elements.pizzaTypeInput) elements.pizzaTypeInput.value = storage.pizzaType;
-    }
-    
-    function savePizzaDefaults() {
-        localStorage.setItem('pizzaAttendees', elements.attendeesInput.value);
-        localStorage.setItem('pizzaType', elements.pizzaTypeInput.value);
-        localStorage.setItem('pizzaSlicesPerPerson', elements.slicesPerPersonInput.value);
-        localStorage.setItem('pizzaHoursDebugging', elements.hoursDebuggingInput.value);
-    }
-
-    // Debounce function to prevent rapid recalculations
-    function debounce(func, wait) {
-        let timeout;
-        return function(...args) {
-            const context = this;
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(context, args), wait);
-        };
-    }
-    
-    // Utility function for style management - reduces inline styles
-    const styleUtils = {
-        // Create an object to cache created style tags
-        styleCache: {},
         
-        // Add a CSS class dynamically
-        createClass: function(className, cssRules) {
-            // Check if this class already exists
-            if (this.styleCache[className]) return className;
-            
-            // Create a new style element if needed
-            let styleTag = document.getElementById('dynamic-styles');
-            if (!styleTag) {
-                styleTag = document.createElement('style');
-                styleTag.id = 'dynamic-styles';
-                document.head.appendChild(styleTag);
+        // Fifty pizzas
+        if (!achievements.fiftyPizzas.unlocked && totalPizzasOrdered >= 50) {
+            achievements.fiftyPizzas.unlocked = true;
+            achievements.fiftyPizzas.unlockedAt = new Date().toISOString();
+            unlocked.push(achievements.fiftyPizzas);
+        }
+        
+        // Big spender
+        if (!achievements.bigSpender.unlocked && totalBudgetSpent >= 500) {
+            achievements.bigSpender.unlocked = true;
+            achievements.bigSpender.unlockedAt = new Date().toISOString();
+            unlocked.push(achievements.bigSpender);
+        }
+        
+        // Madness levels
+        if (!achievements.madnessReached.unlocked && madnessLevel >= 5) {
+            achievements.madnessReached.unlocked = true;
+            achievements.madnessReached.unlockedAt = new Date().toISOString();
+            unlocked.push(achievements.madnessReached);
+        }
+        
+        if (!achievements.totalChaos.unlocked && madnessLevel >= 10) {
+            achievements.totalChaos.unlocked = true;
+            achievements.totalChaos.unlockedAt = new Date().toISOString();
+            unlocked.push(achievements.totalChaos);
+        }
+        
+        // Context-specific achievements
+        if (context) {
+            if (context.teamSize >= 20 && !achievements.pizzaParty.unlocked) {
+                achievements.pizzaParty.unlocked = true;
+                achievements.pizzaParty.unlockedAt = new Date().toISOString();
+                unlocked.push(achievements.pizzaParty);
             }
             
-            // Add the new class
-            const styleSheet = styleTag.sheet;
-            const ruleText = `.${className} { ${cssRules} }`;
-            styleSheet.insertRule(ruleText, styleSheet.cssRules.length);
+            if (context.duration === 24 && !achievements.allNighter.unlocked) {
+                achievements.allNighter.unlocked = true;
+                achievements.allNighter.unlockedAt = new Date().toISOString();
+                unlocked.push(achievements.allNighter);
+            }
             
-            // Cache it
-            this.styleCache[className] = true;
-            return className;
-        }
-    };
-    
-    // Initialize
-    loadPizzaDefaults();
-    checkPizzaOptions();
-    initializeButtons();
-
-    // Check existing pizza options - an optimization from the original duplicate option code
-    function checkPizzaOptions() {
-        if (!elements.pizzaTypeInput) return;
-        
-        // No need to add options since they're already in the HTML
-        console.log("Pizza options loaded successfully");
-    }
-
-    // Button initialization
-    function initializeButtons() {
-        if (!elements.formFieldset) return;
-        
-        // Create a dedicated button container div with proper styling
-        let buttonContainer = document.querySelector('.advanced-button-group');
-        if (!buttonContainer) {
-            buttonContainer = document.createElement('div');
-            buttonContainer.className = 'advanced-button-group';
-            buttonContainer.style.display = 'flex';
-            buttonContainer.style.flexWrap = 'wrap';
-            buttonContainer.style.gap = '15px';
-            buttonContainer.style.marginTop = '30px';
-            buttonContainer.style.justifyContent = 'center';
-            buttonContainer.style.borderTop = '1px solid rgba(0,0,0,0.1)';
-            buttonContainer.style.paddingTop = '25px';
+            if (context.pizzaType === 'party' && !achievements.partyPizza.unlocked) {
+                achievements.partyPizza.unlocked = true;
+                achievements.partyPizza.unlockedAt = new Date().toISOString();
+                unlocked.push(achievements.partyPizza);
+            }
             
-            // Add a heading for the advanced buttons section
-            const heading = document.createElement('div');
-            heading.textContent = 'ADVANCED FEATURES';
-            heading.style.width = '100%';
-            heading.style.textAlign = 'center';
-            heading.style.marginBottom = '20px';
-            heading.style.fontWeight = 'bold';
-            heading.style.fontSize = '1.1rem';
-            heading.style.color = '#666';
-            heading.style.letterSpacing = '1px';
-            heading.style.textTransform = 'uppercase';
-            buttonContainer.appendChild(heading);
+            if (context.hunger === 3 && !achievements.hungryCrew.unlocked) {
+                achievements.hungryCrew.unlocked = true;
+                achievements.hungryCrew.unlockedAt = new Date().toISOString();
+                unlocked.push(achievements.hungryCrew);
+            }
             
-            elements.formFieldset.appendChild(buttonContainer);
+            // Min/Max testing
+            if (context.teamSize === 1) testedMin = true;
+            if (context.teamSize === 500) testedMax = true;
+            if (testedMin && testedMax && !achievements.minMaxer.unlocked) {
+                achievements.minMaxer.unlocked = true;
+                achievements.minMaxer.unlockedAt = new Date().toISOString();
+                unlocked.push(achievements.minMaxer);
+            }
         }
         
-        // Add buttons only if they don't already exist
-        if (!document.querySelector('button[data-function="ai-toppings"]')) {
-            // AI Toppings button
-            const aiBtn = createButton('AI Toppings Generator', () => {
-                showAIToppings();
-            }, 'fas fa-robot');
-            aiBtn.dataset.function = "ai-toppings";
-            aiBtn.title = "Let AI suggest random tech-themed toppings";
-            aiBtn.style.minWidth = '180px';
-            buttonContainer.appendChild(aiBtn);
-        }
-
-        if (!document.querySelector('button[data-function="copy-report"]')) {
-            // Copy to Clipboard button
-            const copyBtn = createButton('Copy Report to Clipboard', () => {
-                copyReportToClipboard();
-            }, 'fas fa-clipboard');
-            copyBtn.dataset.function = "copy-report";
-            copyBtn.title = "Copy calculation results to clipboard";
-            copyBtn.classList.add('button-subtle');
-            buttonContainer.appendChild(copyBtn);
-        }
-
-        if (!document.querySelector('button[data-function="chaos-monkey"]')) {
-            // Chaos Monkey button (new)
-            const chaosBtn = createButton('Unleash Chaos Monkey', () => {
-                runChaosMonkey();
-            }, 'fas fa-bomb');
-            chaosBtn.dataset.function = "chaos-monkey";
-            chaosBtn.title = "Test the pizza calculator's resilience";
-            chaosBtn.classList.add('button-secondary');
-            buttonContainer.appendChild(chaosBtn);
-        }
-        
-        if (!document.querySelector('button[data-function="tech-debt"]')) {
-            // Technical Debt Analysis button (new)
-            const techDebtBtn = createButton('Technical Debt Analysis', () => {
-                const techDebtData = getTechnicalDebtData();
-                showTechDebtDetails(techDebtData);
-            }, 'fas fa-credit-card');
-            techDebtBtn.dataset.function = "tech-debt";
-            techDebtBtn.title = "Calculate the technical debt accrued from pizza consumption";
-            techDebtBtn.classList.add('button-subtle');
-            buttonContainer.appendChild(techDebtBtn);
-        }
-    }
-
-    function createButton(text, onClick, iconClass = null) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.onclick = onClick;
-        
-        // If an icon class is provided, create an icon
-        if (iconClass) {
-            const icon = document.createElement('i');
-            icon.className = iconClass;
-            icon.style.fontSize = '1.2rem'; // Make icons slightly larger
-            btn.appendChild(icon);
-            
-            const span = document.createElement('span');
-            span.textContent = text;
-            span.style.fontWeight = '600'; // Make text slightly bolder
-            btn.appendChild(span);
+        // Speed runner
+        const now = Date.now();
+        if (now - speedRunStart < 30000) {
+            speedRunCount++;
+            if (speedRunCount >= 5 && !achievements.speedRunner.unlocked) {
+                achievements.speedRunner.unlocked = true;
+                achievements.speedRunner.unlockedAt = new Date().toISOString();
+                unlocked.push(achievements.speedRunner);
+            }
         } else {
-            btn.textContent = text;
+            speedRunStart = now;
+            speedRunCount = 1;
         }
         
-        // Additional styling for consistent button sizes
-        btn.style.minHeight = '45px';
-        
-        return btn;
-    }
-
-    // AI Toppings generator with enhanced features
-    window.generateAIToppings = function(count = 3) {
-        // Topping categories
-        const techToppings = [
-            "Pepperoni++",
-            "Quantum Pineapple Bits",
-            "AI-Generated Olives",
-            "Crypto-Sauce",
-            "Extra Cheese Layer v2.0",
-            "NaN-tilla Chips",
-            "Recursive Bacon (Bacon inside Bacon)",
-            "Kubernetes Clusters",
-            "Byte-sized Pepperoni",
-            "IPv6 Olives (there's always too many)",
-            "Serverless Sausage",
-            "Docker Container Cheese",
-            "Git Merge Mushrooms",
-            "Blockchain Basil",
-            "RAID Array Arugula",
-            "Agile Anchovies",
-            "Machine Learning Meatballs",
-            "Big Data Dough"
-        ];
-        
-        const programmingToppings = [
-            "Python Peppers",
-            "Java Jalapeños",
-            "C++ Croutons",
-            "Ruby Red Onions",
-            "Swift Sausage",
-            "Perl Pepperoncini",
-            "Rust Roasted Garlic",
-            "Go Gorgonzola",
-            "React Red Peppers",
-            "TypeScript Tomatoes",
-            "Angular Artichokes",
-            "Vue Vanilla Extract",
-            "Scala Scallions",
-            "Kotlin Kraut",
-            "MySQL Mushrooms",
-            "Bash Bacon Bits",
-            "Flutter Feta",
-            "Node Nut Sprinkles"
-        ];
-        
-        const errorToppings = [
-            "404 Not Found Feta", 
-            "Null Pointer Nuts",
-            "Undefined Umami",
-            "Syntax Error Spinach", 
-            "Race Condition Radish", 
-            "Buffer Overflow Beef",
-            "Memory Leak Mozzarella",
-            "Stack Trace Tomatoes",
-            "Segmentation Fault Salami",
-            "Exception Eggplant",
-            "Timeout Thyme",
-            "Corrupted Cookie Crumbles",
-            "Blue Screen Blue Cheese",
-            "Kernel Panic Kale"
-        ];
-        
-        const bizarreToppings = [
-            "BBQ Marshmallows",
-            "Holographic Hot Sauce",
-            "Schrodinger's Sardines (may or may not exist)",
-            "Time-Traveling Truffles",
-            "Quantum Entangled Quesadilla Bits",
-            "Fractal Fries",
-            "Self-Replicating Soylent Sprinkles",
-            "Tesseract Tortilla Chips",
-            "Blockchain-Verified Bacon",
-            "AI-Hallucinated Jalapeños",
-            "Heisenberg's Uncertain Ham",
-            "Caffeinated Code Sprinkles",
-            "Alternate Reality Aioli",
-            "Recursive Ranch Dressing",
-            "Dark Matter Dough",
-            "Zero-Day Exploitation Zucchini"
-        ];
-        
-        // Combined options with weights for more interesting selections
-        const categories = [
-            { category: "tech", items: techToppings, weight: 40 },
-            { category: "programming", items: programmingToppings, weight: 30 },
-            { category: "error", items: errorToppings, weight: 15 },
-            { category: "bizarre", items: bizarreToppings, weight: 15 }
-        ];
-        
-        // Special "themed pizza" combinations
-        const themedPizzas = [
-            {
-                name: "Full Stack Pizza",
-                toppings: ["Frontend Feta", "Backend Bacon", "Database Dill", "API Anchovies", "Cloud Cheese"],
-                description: "A layered approach with all components of the development stack."
-            },
-            {
-                name: "DevOps Delight",
-                toppings: ["Continuous Integration Cilantro", "Docker Container Cheese", "Kubernetes Clusters", "Jenkins Jam", "Git Merge Mushrooms"],
-                description: "Automatically deployed to your table with zero downtime."
-            },
-            {
-                name: "Legacy Code Special",
-                toppings: ["COBOL Croutons", "Deprecated API Dill", "Spaghetti Code Sauce", "Technical Debt Tomatoes", "Y2K Yogurt"],
-                description: "Nobody wants to maintain it, but somehow it's still in production."
-            },
-            {
-                name: "Crypto Pizza",
-                toppings: ["Bitcoin Basil", "Ethereum Eggplant", "NFT Nutmeg", "Blockchain Bacon", "Decentralized Dressing"],
-                description: "Costs a fortune one day, nothing the next. Guaranteed to be volatile!"
-            },
-            {
-                name: "AI Hallucination Pizza",
-                toppings: ["Synthetic Sausage", "Neural Network Noodles", "Transformer Thyme", "LLM Linguini", "GPT Garlic"],
-                description: "Contains toppings that don't exist but sound plausible. May produce unexpected results."
-            },
-            {
-                name: "Cybersecurity Special",
-                toppings: ["Firewall Frankfurter", "VPN Vanilla", "Zero-Trust Zucchini", "Penetration Test Peppers", "Hash Function Hash Browns"],
-                description: "Comes in an encrypted box. Requires two-factor authentication to open."
-            }
-        ];
-        
-        // Random chance to get a themed pizza (20%)
-        if (Math.random() < 0.2) {
-            const selectedTheme = themedPizzas[Math.floor(Math.random() * themedPizzas.length)];
-            return {
-                isThemed: true,
-                name: selectedTheme.name,
-                toppings: selectedTheme.toppings,
-                description: selectedTheme.description
-            };
+        // Long session
+        if ((now - startTime) > 300000 && !achievements.longSession.unlocked) {
+            achievements.longSession.unlocked = true;
+            achievements.longSession.unlockedAt = new Date().toISOString();
+            unlocked.push(achievements.longSession);
         }
         
-        // Regular random toppings
-        const selected = [];
-        
-        // Function to select a category based on weights
-        function selectCategory() {
-            const totalWeight = categories.reduce((sum, category) => sum + category.weight, 0);
-            let random = Math.random() * totalWeight;
-            
-            for (const category of categories) {
-                if (random < category.weight) {
-                    return category;
-                }
-                random -= category.weight;
-            }
-            
-            return categories[0]; // Fallback
+        // Reset master
+        if (resetCount >= 10 && !achievements.resetMaster.unlocked) {
+            achievements.resetMaster.unlocked = true;
+            achievements.resetMaster.unlockedAt = new Date().toISOString();
+            unlocked.push(achievements.resetMaster);
         }
         
-        // Select toppings from weighted categories
-        while (selected.length < count) {
-            const category = selectCategory();
-            const items = category.items;
-            
-            if (items.length === 0) continue;
-            
-            const randIndex = Math.floor(Math.random() * items.length);
-            const selectedTopping = items[randIndex];
-            
-            // Remove the selected topping to avoid duplicates
-            items.splice(randIndex, 1);
-            
-            // Add the topping with its category
-            selected.push({
-                name: selectedTopping,
-                category: category.category
-            });
+        // Pizza prophet (learns after 20 calculations)
+        if (calculationCount >= 20 && !achievements.pizzaProphet.unlocked) {
+            achievements.pizzaProphet.unlocked = true;
+            achievements.pizzaProphet.unlockedAt = new Date().toISOString();
+            unlocked.push(achievements.pizzaProphet);
         }
         
-        return {
-            isThemed: false,
-            toppings: selected
-        };
-    };
-
-    function showAIToppings() {
-        if (!elements.resultDiv) return;
-        
-        // Create a styled container
-        const toppingsContainer = document.createElement('div');
-        toppingsContainer.className = 'ai-toppings-container';
-        toppingsContainer.style.marginTop = '20px';
-        toppingsContainer.style.padding = '20px';
-        toppingsContainer.style.borderRadius = '8px';
-        toppingsContainer.style.backgroundColor = 'rgba(33, 150, 243, 0.1)';
-        toppingsContainer.style.border = '2px solid #2196F3';
-        toppingsContainer.style.position = 'relative';
-        
-        // Header
-        const header = document.createElement('h3');
-        header.innerHTML = '🤖 AI-Generated Toppings';
-        header.style.color = '#2196F3';
-        header.style.marginTop = '0';
-        header.style.marginBottom = '15px';
-        toppingsContainer.appendChild(header);
-        
-        // Get toppings with a random count between 3-5
-        const count = Math.floor(Math.random() * 3) + 3;
-        const aiToppingsResult = generateAIToppings(count);
-        
-        if (aiToppingsResult.isThemed) {
-            // Display themed pizza
-            const themedPizzaBox = document.createElement('div');
-            themedPizzaBox.style.padding = '15px';
-            themedPizzaBox.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
-            themedPizzaBox.style.borderRadius = '6px';
-            themedPizzaBox.style.borderLeft = '5px solid #3F51B5';
-            
-            const themeName = document.createElement('div');
-            themeName.style.fontSize = '1.2rem';
-            themeName.style.fontWeight = 'bold';
-            themeName.style.marginBottom = '10px';
-            themeName.textContent = `${aiToppingsResult.name}`;
-            themedPizzaBox.appendChild(themeName);
-            
-            const themeDesc = document.createElement('div');
-            themeDesc.style.fontSize = '0.9rem';
-            themeDesc.style.fontStyle = 'italic';
-            themeDesc.style.marginBottom = '15px';
-            themeDesc.textContent = aiToppingsResult.description;
-            themedPizzaBox.appendChild(themeDesc);
-            
-            const toppingsList = document.createElement('div');
-            toppingsList.style.display = 'flex';
-            toppingsList.style.flexWrap = 'wrap';
-            toppingsList.style.gap = '10px';
-            
-            aiToppingsResult.toppings.forEach(topping => {
-                const chip = document.createElement('span');
-                chip.style.display = 'inline-block';
-                chip.style.backgroundColor = '#3F51B5';
-                chip.style.color = 'white';
-                chip.style.padding = '5px 10px';
-                chip.style.borderRadius = '20px';
-                chip.style.fontSize = '0.9rem';
-                chip.textContent = topping;
-                toppingsList.appendChild(chip);
-            });
-            
-            themedPizzaBox.appendChild(toppingsList);
-            toppingsContainer.appendChild(themedPizzaBox);
-        } else {
-            // Display regular toppings with categories
-            const toppingsBox = document.createElement('div');
-            toppingsBox.style.display = 'flex';
-            toppingsBox.style.flexDirection = 'column';
-            toppingsBox.style.gap = '15px';
-            
-            // Get color for each category
-            const categoryColors = {
-                tech: '#4CAF50',       // Green
-                programming: '#9C27B0', // Purple
-                error: '#F44336',      // Red
-                bizarre: '#FF9800'     // Orange
-            };
-            
-            // Display each topping with its category
-            aiToppingsResult.toppings.forEach(topping => {
-                const toppingItem = document.createElement('div');
-                toppingItem.style.display = 'flex';
-                toppingItem.style.alignItems = 'center';
-                toppingItem.style.gap = '10px';
-                
-                const categoryBadge = document.createElement('span');
-                const color = categoryColors[topping.category] || '#2196F3';
-                categoryBadge.style.backgroundColor = color;
-                categoryBadge.style.color = 'white';
-                categoryBadge.style.padding = '3px 8px';
-                categoryBadge.style.borderRadius = '4px';
-                categoryBadge.style.fontSize = '0.7rem';
-                categoryBadge.style.textTransform = 'uppercase';
-                categoryBadge.style.fontWeight = 'bold';
-                categoryBadge.textContent = topping.category;
-                
-                const toppingName = document.createElement('span');
-                toppingName.style.fontSize = '1.1rem';
-                toppingName.textContent = topping.name;
-                
-                toppingItem.appendChild(categoryBadge);
-                toppingItem.appendChild(toppingName);
-                toppingsBox.appendChild(toppingItem);
-            });
-            
-            toppingsContainer.appendChild(toppingsBox);
-        }
-        
-        // Add a fun fact about AI and pizza
-        const funFacts = [
-            "Pizza topped with AI-generated ingredients has a 42% lower bug rate in production environments.",
-            "Studies show that programmers who eat randomly-generated pizza toppings are 37% more likely to solve difficult algorithms.",
-            "AI once recommended 'semicolon sausage' as a topping, and surprisingly, it was delicious.",
-            "In blind taste tests, humans couldn't distinguish between human-curated and AI-generated pizza topping combinations.",
-            "AI systems trained on pizza toppings have accidentally generated 3 new programming languages.",
-            "A neural network trained on pizza preferences once concluded that 'coffee grounds' were a viable topping. It was promptly retrained."
-        ];
-        
-        const funFact = document.createElement('div');
-        funFact.style.marginTop = '20px';
-        funFact.style.fontSize = '0.9rem';
-        funFact.style.padding = '10px';
-        funFact.style.backgroundColor = 'rgba(0, 0, 0, 0.05)';
-        funFact.style.borderRadius = '4px';
-        funFact.style.fontStyle = 'italic';
-        
-        funFact.innerHTML = `<strong>AI Fun Fact:</strong> ${funFacts[Math.floor(Math.random() * funFacts.length)]}`;
-        toppingsContainer.appendChild(funFact);
-        
-        // Add a "Try Again" button
-        const tryAgainBtn = document.createElement('button');
-        tryAgainBtn.textContent = "Generate New Toppings";
-        tryAgainBtn.style.marginTop = '15px';
-        tryAgainBtn.style.backgroundColor = '#2196F3';
-        tryAgainBtn.style.color = 'white';
-        tryAgainBtn.style.border = 'none';
-        tryAgainBtn.style.padding = '8px 15px';
-        tryAgainBtn.style.borderRadius = '4px';
-        tryAgainBtn.style.cursor = 'pointer';
-        tryAgainBtn.style.fontWeight = 'bold';
-        tryAgainBtn.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
-        
-        tryAgainBtn.addEventListener('click', () => {
-            // Remove current container and show new toppings
-            toppingsContainer.remove();
-            showAIToppings();
-        });
-        
-        toppingsContainer.appendChild(tryAgainBtn);
-        
-        // Add to result area
-        elements.resultDiv.appendChild(toppingsContainer);
-    }
-
-    // Clipboard functionality
-    function copyReportToClipboard() {
-        if (!calculationCompleted || !pizzaReport) {
-            showToast("No pizza report to copy! Try calculating first.");
-            return;
-        }
-        
-        navigator.clipboard.writeText(pizzaReport)
-            .then(() => {
-                showToast("Pizza report copied to clipboard successfully! 📋");
-            })
-            .catch(() => {
-                showToast("Failed to copy to clipboard! Check permissions.");
-            });
-    }
-
-    // Main calculation function
-    window.calculatePizzas = debounce(function() {
-        calculationCompleted = false;
-        pizzaReport = "";
-
-        // Check for special inputs that will trigger silly behaviors
-        if (checkForSillyInputs()) {
-            return; // Stop normal calculation if silly inputs detected
-        }
-
-        // Save user inputs to localStorage
-        savePizzaDefaults();
-        
-        // Reset UI
-        resetUI();
-        
-        // Show loading progress
-        simulateLoading();
-        
-        // Calculate technical debt (new feature)
-        calculateTechnicalDebt();
-    }, 300); // 300ms debounce
-    
-    // Function to check for silly inputs and trigger special behaviors
-    function checkForSillyInputs() {
-        // Check for negative numbers
-        const attendees = parseFloat(elements.attendeesInput.value);
-        const slicesPerPerson = parseFloat(elements.slicesPerPersonInput.value);
-        const hoursDebugging = parseFloat(elements.hoursDebuggingInput.value);
-        
-        // Check for non-numerical/special characters
-        const hasSpecialChars = /[^0-9.-]/.test(elements.attendeesInput.value) || 
-                               /[^0-9.-]/.test(elements.slicesPerPersonInput.value) || 
-                               /[^0-9.-]/.test(elements.hoursDebuggingInput.value);
-        
-        // If we have negative numbers, trigger the "negative pizza" effect
-        if (attendees < 0 || slicesPerPerson < 0 || hoursDebugging < 0) {
-            triggerNegativePizzaEffect();
-            return true;
-        }
-        
-        // If we have special characters, trigger the "pizza glitch" effect
-        if (hasSpecialChars) {
-            triggerPizzaGlitchEffect();
-            return true;
-        }
-        
-        // No silly inputs detected
-        return false;
-    }
-    
-    // Function to create a bizarre negative pizza effect
-    function triggerNegativePizzaEffect() {
-        if (!elements.resultDiv) return;
-        
-        // Reset UI first
-        resetUI();
-        
-        // Create a glitched negative pizza outcome
-        const negativeContainer = document.createElement('div');
-        negativeContainer.style.position = 'relative';
-        negativeContainer.style.margin = '30px 0';
-        negativeContainer.style.padding = '30px';
-        negativeContainer.style.border = '2px dashed #F44336';
-        negativeContainer.style.borderRadius = '10px';
-        negativeContainer.style.backgroundColor = 'rgba(244, 67, 54, 0.1)';
-        negativeContainer.style.overflow = 'hidden';
-        
-        // Create glitchy text
-        const glitchText = document.createElement('h3');
-        glitchText.textContent = "NEGATIVE PIZZA DETECTED";
-        glitchText.style.color = '#F44336';
-        glitchText.style.fontFamily = "'Fira Code', monospace";
-        glitchText.style.textAlign = 'center';
-        glitchText.style.animation = 'glitch 0.3s infinite';
-        glitchText.style.marginBottom = '20px';
-        glitchText.style.textShadow = '3px 3px 0 rgba(255,0,0,0.3), -3px -3px 0 rgba(0,0,255,0.3)';
-        
-        // Create explanation
-        const explanation = document.createElement('p');
-        explanation.innerHTML = "You've created a <strong>pizza paradox</strong>! A negative pizza is when people bring pizza to YOU instead of the other way around.<br><br>The good news is you'll actually GAIN calories instead of consuming them. The bad news is it tastes like antimatter.";
-        explanation.style.textAlign = 'center';
-        explanation.style.lineHeight = '1.6';
-        
-        // Create upside-down pizza icon
-        const pizzaIcon = document.createElement('div');
-        pizzaIcon.innerHTML = '🍕';
-        pizzaIcon.style.fontSize = '80px';
-        pizzaIcon.style.display = 'block';
-        pizzaIcon.style.margin = '30px auto';
-        pizzaIcon.style.transform = 'rotate(180deg)';
-        pizzaIcon.style.filter = 'invert(1) hue-rotate(180deg)';
-        pizzaIcon.style.animation = 'float 3s ease-in-out infinite';
-        
-        // Create "physics warning" footer
-        const warning = document.createElement('div');
-        warning.innerHTML = "⚠️ Warning: Negative pizza may disrupt the space-time continuum and violate the second law of thermodynamics.";
-        warning.style.fontSize = '0.9rem';
-        warning.style.marginTop = '20px';
-        warning.style.textAlign = 'center';
-        warning.style.padding = '10px';
-        warning.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
-        warning.style.borderRadius = '5px';
-        
-        // Add keyframe animation if not already added
-        if (!document.getElementById('negative-pizza-keyframes')) {
-            const style = document.createElement('style');
-            style.id = 'negative-pizza-keyframes';
-            style.textContent = `
-                @keyframes glitch {
-                    0% { transform: translate(0); }
-                    20% { transform: translate(-2px, 2px); }
-                    40% { transform: translate(2px, -2px); }
-                    60% { transform: translate(-2px, -2px); }
-                    80% { transform: translate(2px, 2px); }
-                    100% { transform: translate(0); }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-        
-        // Assemble container
-        negativeContainer.appendChild(glitchText);
-        negativeContainer.appendChild(explanation);
-        negativeContainer.appendChild(pizzaIcon);
-        negativeContainer.appendChild(warning);
-        elements.resultDiv.appendChild(negativeContainer);
-        
-        // Make the result section upside down
-        elements.resultDiv.style.transform = 'rotate(180deg)';
-        elements.resultDiv.style.transition = 'transform 1s cubic-bezier(0.68, -0.55, 0.27, 1.55)';
-        
-        // Revert the inner content so it's readable (upside-down container with right-side-up content)
-        negativeContainer.style.transform = 'rotate(180deg)';
-        
-        // Flip it back after 5 seconds
-        setTimeout(() => {
-            elements.resultDiv.style.transform = 'rotate(0deg)';
-        }, 5000);
-        
-        // Show toast message
-        showToast("Negative pizza created - prepare for antimatter dinner!", "error");
-    }
-    
-    // Function to create a "pizza glitch" effect for non-numerical inputs
-    function triggerPizzaGlitchEffect() {
-        if (!elements.resultDiv) return;
-        
-        // Reset UI first
-        resetUI();
-        
-        // Create a matrix-like glitch container
-        const glitchContainer = document.createElement('div');
-        glitchContainer.style.position = 'relative';
-        glitchContainer.style.margin = '30px 0';
-        glitchContainer.style.padding = '30px';
-        glitchContainer.style.backgroundColor = '#000';
-        glitchContainer.style.borderRadius = '10px';
-        glitchContainer.style.overflow = 'hidden';
-        glitchContainer.style.color = '#00FF00';
-        glitchContainer.style.fontFamily = "'Fira Code', monospace";
-        
-        // Create terminal header
-        const terminalHeader = document.createElement('div');
-        terminalHeader.textContent = "PIZZA.EXE encountered an unexpected error";
-        terminalHeader.style.borderBottom = '1px solid #00FF00';
-        terminalHeader.style.paddingBottom = '10px';
-        terminalHeader.style.marginBottom = '20px';
-        terminalHeader.style.fontWeight = 'bold';
-        
-        // Create matrix effect background
-        const matrixBg = document.createElement('div');
-        matrixBg.style.position = 'absolute';
-        matrixBg.style.top = '0';
-        matrixBg.style.left = '0';
-        matrixBg.style.right = '0';
-        matrixBg.style.bottom = '0';
-        matrixBg.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-        matrixBg.style.overflow = 'hidden';
-        matrixBg.style.zIndex = '1';
-        
-        // Add matrix rain characters
-        for (let i = 0; i < 25; i++) {
-            const column = document.createElement('div');
-            column.className = 'matrix-column';
-            column.style.position = 'absolute';
-            column.style.width = '20px';
-            column.style.left = `${Math.random() * 100}%`;
-            column.style.top = '-100px';
-            column.style.height = '100%';
-            column.style.overflow = 'visible';
-            column.style.zIndex = '1';
-            
-            // Random animation speed and delay
-            const speed = 3 + Math.random() * 5;
-            const delay = Math.random() * 2;
-            
-            column.style.animation = `matrix-rain ${speed}s ${delay}s linear infinite`;
-            
-            // Add matrix characters
-            for (let j = 0; j < 15; j++) {
-                const char = document.createElement('div');
-                char.textContent = String.fromCharCode(33 + Math.floor(Math.random() * 94)); // Random ASCII
-                char.style.color = '#0F0';
-                char.style.opacity = Math.random() * 0.5 + 0.5;
-                char.style.fontSize = '14px';
-                char.style.position = 'absolute';
-                char.style.top = `${j * 20}px`;
-                
-                // Randomly change character
-                setInterval(() => {
-                    char.textContent = String.fromCharCode(33 + Math.floor(Math.random() * 94));
-                }, Math.random() * 1000 + 1000);
-                
-                column.appendChild(char);
-            }
-            
-            matrixBg.appendChild(column);
-        }
-        
-        // Add keyframe animation if not already added
-        if (!document.getElementById('matrix-keyframes')) {
-            const style = document.createElement('style');
-            style.id = 'matrix-keyframes';
-            style.textContent = `
-                @keyframes matrix-rain {
-                    0% { transform: translateY(0); }
-                    100% { transform: translateY(1000px); }
-                }
-                
-                @keyframes glitch-text {
-                    0% { transform: translate(0); text-shadow: 0 0 0 #0F0; }
-                    20% { transform: translate(-2px, 2px); text-shadow: 3px 0 0 #f00, -3px 0 0 #00f; }
-                    40% { transform: translate(2px, -2px); text-shadow: -3px 0 0 #f00, 3px 0 0 #00f; }
-                    60% { transform: translate(0); text-shadow: 0 0 0 #0F0; }
-                    80% { transform: translate(2px, 2px); text-shadow: 3px 0 0 #f00, -3px 0 0 #00f; }
-                    100% { transform: translate(0); text-shadow: 0 0 0 #0F0; }
-                }
-                
-                @keyframes flicker {
-                    0% { opacity: 1; }
-                    5% { opacity: 0.7; }
-                    10% { opacity: 1; }
-                    15% { opacity: 0.3; }
-                    20% { opacity: 1; }
-                    50% { opacity: 1; }
-                    55% { opacity: 0.7; }
-                    60% { opacity: 1; }
-                    75% { opacity: 1; }
-                    80% { opacity: 0.5; }
-                    85% { opacity: 1; }
-                    100% { opacity: 1; }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-        
-        // Create error messages
-        const errorLines = [
-            "ERROR: Non-numerical ingredients detected in pizza recipe",
-            "CRITICAL: Pizza.parse() failed: invalid topping syntax",
-            "WARNING: Potential cross-site pizza scripting attempt detected",
-            "FATAL: Stack overflow in recursive pizza function",
-            "SYSTEM: Attempting to recalibrate tomato sauce algorithm...",
-            "SYSTEM: Pizza memory heap corrupted",
-            "MEMORY_DUMP: 0xC0FFEE 0xDEADBEEF 0xB16B00B5 0xC0CAC01A",
-            "ABORT: Process terminated, please restart your pizza."
-        ];
-        
-        const errorContainer = document.createElement('div');
-        errorContainer.style.position = 'relative';
-        errorContainer.style.zIndex = '2';
-        
-        errorLines.forEach((line, index) => {
+        // Show achievement notifications with special effects
+        unlocked.forEach((achievement, index) => {
             setTimeout(() => {
-                const errorLine = document.createElement('div');
-                errorLine.textContent = line;
-                errorLine.style.margin = '10px 0';
-                errorLine.style.animation = 'glitch-text 0.3s infinite alternate';
-                errorContainer.appendChild(errorLine);
+                showAchievement(achievement);
                 
-                // Scroll to bottom as new lines appear
-                glitchContainer.scrollTop = glitchContainer.scrollHeight;
-            }, index * 700);
-        });
-        
-        // Create pizza icon that glitches
-        const pizzaIcon = document.createElement('div');
-        pizzaIcon.innerHTML = '🍕';
-        pizzaIcon.style.fontSize = '60px';
-        pizzaIcon.style.margin = '20px auto';
-        pizzaIcon.style.textAlign = 'center';
-        pizzaIcon.style.animation = 'glitch-text 0.5s infinite alternate';
-        pizzaIcon.style.filter = 'hue-rotate(0deg)';
-        
-        // Make the pizza icon cycle through colors
-        let hue = 0;
-        setInterval(() => {
-            hue = (hue + 30) % 360;
-            pizzaIcon.style.filter = `hue-rotate(${hue}deg)`;
-        }, 300);
-        
-        // Create "PLEASE STAND BY" message
-        const standByMsg = document.createElement('div');
-        standByMsg.textContent = "PLEASE STAND BY - REBOOTING PIZZA SYSTEM";
-        standByMsg.style.textAlign = 'center';
-        standByMsg.style.fontWeight = 'bold';
-        standByMsg.style.marginTop = '20px';
-        standByMsg.style.padding = '10px';
-        standByMsg.style.border = '1px solid #00FF00';
-        standByMsg.style.animation = 'flicker 2s infinite';
-        
-        // Assemble container
-        glitchContainer.appendChild(matrixBg);
-        glitchContainer.appendChild(terminalHeader);
-        glitchContainer.appendChild(errorContainer);
-        glitchContainer.appendChild(pizzaIcon);
-        glitchContainer.appendChild(standByMsg);
-        elements.resultDiv.appendChild(glitchContainer);
-        
-        // Randomly glitch the whole UI for brief moments
-        const glitchUI = () => {
-            // Skip if vibe mode is active (to avoid conflicts)
-            if (window.vibeModeActive) return;
-            
-            if (Math.random() > 0.7) {
-                document.body.style.filter = 'invert(1) hue-rotate(180deg)';
-                setTimeout(() => {
-                    document.body.style.filter = '';
-                }, 100);
-            }
-            
-            if (Math.random() > 0.8) {
-                document.body.style.transform = `skew(${Math.random() * 5 - 2.5}deg, ${Math.random() * 5 - 2.5}deg)`;
-                setTimeout(() => {
-                    document.body.style.transform = '';
-                }, 200);
-            }
-        };
-        
-        const glitchInterval = setInterval(glitchUI, 2000);
-        
-        // Stop the glitching after 15 seconds
-        setTimeout(() => {
-            clearInterval(glitchInterval);
-            document.body.style.filter = '';
-            document.body.style.transform = '';
-        }, 15000);
-        
-        // Show toast message
-        showToast("Pizza system corrupted! Non-numerical ingredients detected!", "error");
-    }
-
-    function resetUI() {
-        if (elements.resultDiv) elements.resultDiv.innerHTML = '';
-        if (elements.emailPromptSection) elements.emailPromptSection.style.display = 'none';
-        if (elements.progressBar) elements.progressBar.style.width = '0%';
-        if (elements.progressLabel) elements.progressLabel.textContent = '';
-    }
-
-    function simulateLoading() {
-        // Maxis-style loading messages - funny, quirky, and sometimes nonsensical
-        const loadingSteps = [
-            { text: "Reticulating cheese splines...", delay: 800 },
-            { text: "Solving P vs NP for optimal pizza slicing...", delay: 1200 },
-            { text: "Outsourcing hunger calculations to the cloud...", delay: 700 },
-            { text: "Teaching AI to fold pizza boxes...", delay: 900 },
-            { text: "Calculating topping-to-code ratio...", delay: 600 },
-            { text: "Negotiating with pepperoni union representatives...", delay: 1300 },
-            { text: "Simulating pizza delivery traffic patterns...", delay: 800 },
-            { text: "Synchronizing tomato sauce repositories...", delay: 700 },
-            { text: "Running middle-out compression on deep dish models...", delay: 900 },
-            { text: "Rendering cheese in real-time...", delay: 600 },
-            { text: "Compiling marinara shader code...", delay: 700 },
-            { text: "Installing pizza.js dependencies (3,428 packages)...", delay: 1100 },
-            { text: "Downloading more RAM to handle large pizza orders...", delay: 900 },
-            { text: "Bypassing pizza firewall...", delay: 600 },
-            { text: "npm audit fixing vulnerabilities in crust module...", delay: 800 },
-            { text: "Creating blockchain for transparent topping distribution...", delay: 1000 },
-            { text: "Building Docker container for pizza microservices...", delay: 800 },
-            { text: "Simulating pizza delivery using quantum algorithms...", delay: 1200 },
-            { text: "Running regression tests on vegan option acceptance...", delay: 700 },
-            { text: "Encrypting pineapple preferences with 256-bit cheese...", delay: 800 },
-            { text: "Optimizing for hangry engineers coefficient...", delay: 900 },
-            { text: "Parsing git blame to identify hungriest developers...", delay: 1100 },
-            { text: "Overclocking pizza oven hardware...", delay: 800 },
-            { text: "Deploying to pizza production environment...", delay: 1200 },
-            { text: "Pizza is compiling, please wait...", delay: 1000 },
-            { text: "Waiting for pizza CI pipeline to complete...", delay: 900 },
-            { text: "Creating AWS Lambda functions to slice pizza...", delay: 800 },
-            { text: "Pizzas deployed successfully!", delay: 1500 },
-            { text: "Debugging infinite pizza loop...", delay: 800 },
-            { text: "Migrating legacy toppings to microservices...", delay: 900 },
-            { text: "Performing A/B test on crust thickness...", delay: 700 },
-            { text: "Refactoring spaghetti code (and adding meatballs)...", delay: 1000 },
-            { text: "Found a bug in the tomato sauce module...", delay: 800 },
-            { text: "Rolling back cheese deployment (lactose incident)...", delay: 900 },
-            { text: "Applying machine learning to predict pizza consumption...", delay: 1100 },
-            { text: "Kubernetes pods are scaling (pizza pods, that is)...", delay: 900 },
-            { text: "Redis cache warming with hot pizza data...", delay: 700 },
-            { text: "GraphQL query for optimal topping combinations...", delay: 800 },
-            { text: "WebSocket connection to pizza oven established...", delay: 600 },
-            { text: "Running npm audit... 47,293 vulnerabilities found (ignoring)...", delay: 1200 },
-            { text: "Implementing OAuth2 for pizza authentication...", delay: 800 },
-            { text: "Garbage collecting old pizza crusts...", delay: 700 },
-            { text: "JIT compiling pizza preferences...", delay: 600 },
-            { text: "Lazy loading extra cheese modules...", delay: 800 },
-            { text: "Mocking pizza API responses for unit tests...", delay: 900 },
-            { text: "Provisioning pizza infrastructure as code...", delay: 1000 },
-            { text: "Establishing peer-to-peer pizza network...", delay: 800 },
-            { text: "Applying CSS-in-Pizza styling...", delay: 700 },
-            { text: "Minifying pizza for production...", delay: 600 },
-            { text: "Tree-shaking unused toppings...", delay: 800 },
-            { text: "Hot-reloading pizza modules...", delay: 700 },
-            { text: "Transpiling ES6 Pizza to ES5 for legacy ovens...", delay: 900 },
-            { text: "Pizza service mesh configuring...", delay: 800 },
-            { text: "Implementing pizza circuit breaker pattern...", delay: 1000 },
-            { text: "Rate limiting pizza requests (429 Too Many Pizzas)...", delay: 900 },
-            { text: "Pizza canary deployment in progress...", delay: 800 },
-            { text: "Blue-green pizza deployment switching...", delay: 700 },
-            { text: "Pizza telemetry data collecting...", delay: 600 },
-            { text: "Implementing pizza CQRS pattern...", delay: 900 },
-            { text: "Pizza event sourcing enabled...", delay: 800 },
-            { text: "Applying pizza saga pattern for distributed toppings...", delay: 1100 }
-        ];
-
-        let stepIndex = 0;
-        const totalSteps = loadingSteps.length;
-        const containerElement = document.getElementById('progressSection');
-        
-        // Add Maxis-style appearance to progress bar
-        if (containerElement) {
-            // Add subtle background to progress container
-            containerElement.style.background = 'rgba(0,0,0,0.05)';
-            containerElement.style.padding = '20px';
-            containerElement.style.borderRadius = '10px';
-            containerElement.style.marginTop = '30px';
-            containerElement.style.position = 'relative';
-            containerElement.style.overflow = 'hidden';
-        }
-        
-        // Create a spinner to show alongside the progress bar
-        const spinner = document.createElement('div');
-        spinner.className = 'pizza-spinner';
-        spinner.innerHTML = '🍕';
-        spinner.style.position = 'absolute';
-        spinner.style.top = '25px';
-        spinner.style.left = '15px';
-        spinner.style.fontSize = '24px';
-        spinner.style.animation = 'spin 2s linear infinite';
-        if (containerElement) {
-            containerElement.appendChild(spinner);
-        }
-        
-        // Create a percentage display
-        const percentDisplay = document.createElement('div');
-        percentDisplay.className = 'percentage-display';
-        percentDisplay.style.position = 'absolute';
-        percentDisplay.style.top = '28px';
-        percentDisplay.style.right = '15px';
-        percentDisplay.style.fontWeight = 'bold';
-        percentDisplay.style.fontFamily = "'JetBrains Mono', 'Courier New', monospace";
-        percentDisplay.textContent = '0%';
-        if (containerElement) {
-            containerElement.appendChild(percentDisplay);
-        }
-        
-        // Start the Maxis-style loading sequence
-        updateProgress();
-
-        function updateProgress() {
-            if (!elements.progressBar || !elements.progressLabel) return;
-            
-            if (stepIndex < loadingSteps.length) {
-                // Calculate current percentage based on step
-                let percentage;
-                
-                // Add Maxis-style behavior where progress sometimes goes backward
-                if (stepIndex > 5 && Math.random() < 0.2 && stepIndex < totalSteps - 5) {
-                    // 20% chance to go backward a bit for comedic effect
-                    percentage = Math.max(10, Math.floor((stepIndex / totalSteps) * 100) - Math.floor(Math.random() * 10));
-                    elements.progressLabel.textContent = "Unexpected pizza exception! Rolling back changes...";
-                    
-                    // Show quirky error message
-                    const errorDelay = 800;
+                // Pulse the achievement tracker button
+                const tracker = document.getElementById('achievementTracker');
+                if (tracker) {
+                    tracker.style.animation = 'pulse 0.5s ease-in-out 3';
                     setTimeout(() => {
-                        if (Math.random() < 0.5) {
-                            elements.progressLabel.textContent = "Found a bug in the tomato sauce module...";
-                        } else {
-                            elements.progressLabel.textContent = "Pineapple conflict detected! Resolving merge issues...";
-                        }
-                        
-                        // Then continue with the next real step after a delay
-                        setTimeout(() => {
-                            showNextStep();
-                        }, errorDelay);
-                    }, errorDelay);
-                    
-                    elements.progressBar.style.transition = 'width 0.5s ease-in-out';
-                    elements.progressBar.style.width = `${percentage}%`;
-                    
-                    // Update percentage display with quirky message
-                    if (percentDisplay) {
-                        percentDisplay.textContent = `${percentage}%`;
-                        percentDisplay.style.color = 'orange';
-                        
-                        // Reset color after delay
-                        setTimeout(() => {
-                            percentDisplay.style.color = '';
-                        }, errorDelay * 2);
+                        updateAchievementDisplay(); // Refresh the display after animation
+                    }, 1500);
+                }
+                
+                // Special effects for certain achievements
+                if (achievement.id === 'firstCalculation') {
+                    showToast('Welcome to the Pizza Matrix! 🍕');
+                } else if (achievement.id === 'madnessReached') {
+                    // Screen starts glitching
+                    document.body.style.filter = 'hue-rotate(45deg)';
+                    setTimeout(() => {
+                        document.body.style.filter = '';
+                    }, 2000);
+                } else if (achievement.id === 'totalChaos') {
+                    // Pizza explosion for total chaos
+                    for (let i = 0; i < 30; i++) {
+                        setTimeout(() => createFallingPizza(), i * 100);
                     }
-                    
-                    setTimeout(updateProgress, errorDelay * 3);
-                } else {
-                    showNextStep();
-                }
-                
-                function showNextStep() {
-                    const currentStep = loadingSteps[stepIndex];
-                    percentage = Math.floor(((stepIndex + 1) / totalSteps) * 100);
-                    
-                    // Near completion, do the classic 99% stall
-                    if (percentage > 90 && percentage < 100) {
-                        // Give a 50% chance to stall at 99%
-                        if (Math.random() < 0.5 && stepIndex < totalSteps - 1) {
-                            percentage = 99;
-                            elements.progressLabel.textContent = "Waiting for last slice to render...";
-                            
-                            // Stall for a bit at 99%
-                            setTimeout(() => {
-                                stepIndex++;
-                                updateProgress();
-                            }, 2000);
-                            
-                            elements.progressBar.style.transition = 'width 0.8s ease-in-out';
-                            elements.progressBar.style.width = `${percentage}%`;
-                            
-                            if (percentDisplay) {
-                                percentDisplay.textContent = `${percentage}%`;
-                            }
-                            return;
-                        }
-                    }
-                    
-                    // Normal progress step
-                    elements.progressBar.style.transition = 'width 0.8s ease-in-out';
-                    elements.progressBar.style.width = `${percentage}%`;
-                    elements.progressLabel.textContent = currentStep.text;
-                    
-                    // Update percentage display
-                    if (percentDisplay) {
-                        percentDisplay.textContent = `${percentage}%`;
-                    }
-                    
-                    stepIndex++;
-                    setTimeout(updateProgress, currentStep.delay);
-                }
-            } else {
-                // We've completed all steps - finish up with a fun animation
-                elements.progressBar.style.width = '110%';
-                elements.progressBar.style.transition = 'width 1s ease-in-out, background-color 1s';
-                elements.progressBar.style.backgroundColor = '#4CAF50';
-                elements.progressLabel.textContent = "Pizza deployment exceeded expectations! You're 110% ready to eat! 🍕🎉";
-                
-                if (percentDisplay) {
-                    percentDisplay.textContent = "110%";
-                    percentDisplay.style.color = '#4CAF50';
-                }
-                
-                // Do a brief "celebration" animation
-                if (containerElement) {
-                    containerElement.style.animation = 'pulse 0.5s 3';
-                }
-                
-                // Create a short-lived confetti effect
-                createConfetti();
-                
-                // Complete the calculation
-                setTimeout(completeCalculation, 1500);
-            }
-        }
-        
-        function createConfetti() {
-            const confettiContainer = document.createElement('div');
-            confettiContainer.style.position = 'absolute';
-            confettiContainer.style.top = '0';
-            confettiContainer.style.left = '0';
-            confettiContainer.style.right = '0';
-            confettiContainer.style.height = '0';
-            confettiContainer.style.overflow = 'visible';
-            confettiContainer.style.pointerEvents = 'none';
-            confettiContainer.style.zIndex = '100';
-            
-            if (containerElement) {
-                containerElement.appendChild(confettiContainer);
-            
-                // Create confetti pieces
-                const colors = ['#4CAF50', '#FF5722', '#FFC107', '#2196F3', '#E91E63'];
-                for (let i = 0; i < 50; i++) {
-                    const confetti = document.createElement('div');
-                    confetti.style.position = 'absolute';
-                    confetti.style.width = `${Math.random() * 10 + 5}px`;
-                    confetti.style.height = `${Math.random() * 5 + 5}px`;
-                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                    confetti.style.left = `${Math.random() * 100}%`;
-                    confetti.style.top = '0';
-                    confetti.style.opacity = '0.8';
-                    confetti.style.borderRadius = '2px';
-                    confetti.style.transform = 'rotate(' + Math.random() * 360 + 'deg)';
-                    confetti.style.animation = `confetti ${Math.random() * 2 + 1}s ease-out forwards`;
-                    
-                    confettiContainer.appendChild(confetti);
-                }
-                
-                // Create keyframe animation for confetti
-                if (!document.getElementById('confetti-keyframes')) {
-                    const style = document.createElement('style');
-                    style.id = 'confetti-keyframes';
-                    style.textContent = `
-                        @keyframes confetti {
-                            0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
-                            100% { transform: translateY(${containerElement.offsetHeight}px) rotate(${Math.random() * 360}deg); opacity: 0; }
-                        }
-                        @keyframes pulse {
-                            0% { transform: scale(1); }
-                            50% { transform: scale(1.02); }
-                            100% { transform: scale(1); }
-                        }
+                    document.body.style.animation = 'earthquake 0.5s';
+                    setTimeout(() => {
+                        document.body.style.animation = '';
+                    }, 500);
+                } else if (achievement.id === 'pizzaProphet') {
+                    // Rainbow effect for pizza mastery
+                    document.body.style.animation = 'rainbow 3s linear';
+                    setTimeout(() => {
+                        document.body.style.animation = '';
+                    }, 3000);
+                    showToast('THE PROPHECY IS FULFILLED! 🍕✨');
+                } else if (achievement.id === 'speedRunner') {
+                    // Speed lines effect
+                    const speedLines = document.createElement('div');
+                    speedLines.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: linear-gradient(90deg, 
+                            transparent, rgba(255,255,0,0.3), transparent);
+                        animation: speedLines 0.5s linear;
+                        pointer-events: none;
+                        z-index: 99999;
                     `;
-                    document.head.appendChild(style);
+                    document.body.appendChild(speedLines);
+                    setTimeout(() => speedLines.remove(), 500);
+                } else if (achievement.id === 'pizzaParty') {
+                    // Confetti effect
+                    for (let i = 0; i < 20; i++) {
+                        const confetti = document.createElement('div');
+                        confetti.textContent = ['🎉', '🎊', '🍕', '🎈'][Math.floor(Math.random() * 4)];
+                        confetti.style.cssText = `
+                            position: fixed;
+                            top: -50px;
+                            left: ${Math.random() * window.innerWidth}px;
+                            font-size: 30px;
+                            animation: fall 3s linear;
+                            pointer-events: none;
+                            z-index: 9999;
+                        `;
+                        document.body.appendChild(confetti);
+                        setTimeout(() => confetti.remove(), 3000);
+                    }
                 }
-                
-                // Remove confetti after animation completes
-                setTimeout(() => {
-                    confettiContainer.remove();
-                }, 3000);
-            }
-        }
-    }
-
-    function completeCalculation() {
-        const hoursDebugging = parseInt(elements.hoursDebuggingInput.value, 10) || 0;
-        const slicesPerPerson = parseInt(elements.slicesPerPersonInput.value, 10) || 0;
-        const attendees = parseInt(elements.attendeesInput.value, 10) || 0;
-        const pizzaType = elements.pizzaTypeInput.value;
-        
-        // Each hour of debugging adds hunger
-        const debuggingExtraSlices = hoursDebugging * 2;
-        
-        // Calculate base needs
-        const totalSlicesNeeded = (attendees * slicesPerPerson) + debuggingExtraSlices;
-        
-        // Special calculations based on pizza type
-        calculatePizzasByType(pizzaType, totalSlicesNeeded, slicesPerPerson, hoursDebugging, attendees);
-    }
-
-    function calculatePizzasByType(pizzaType, totalSlicesNeeded, slicesPerPerson, hoursDebugging, attendees) {
-        let pizzasRequired;
-        let sliceEquivalency = 1;
-        
-        // Handle special pizza types
-        switch (pizzaType) {
-            case PIZZA_STYLES.NY:
-                sliceEquivalency = 1;
-                break;
-            case PIZZA_STYLES.DETROIT:
-                sliceEquivalency = 1.5;
-                break;
-            case PIZZA_STYLES.CHICAGO:
-                sliceEquivalency = 1.7;
-                break;
-            case PIZZA_STYLES.CALIFORNIA:
-                sliceEquivalency = 0.75;
-                break;
-            case PIZZA_STYLES.HOT_POCKETS:
-                // Hot Pockets have their own calculation
-                pizzasRequired = attendees * hoursDebugging;
-                finalizeResult(pizzasRequired, pizzaType, slicesPerPerson, hoursDebugging, attendees, "Hot Pockets: quick, regrettable!");
-                return;
-            case PIZZA_STYLES.BLOCKCHAIN:
-                // Blockchain pizza is unpredictable
-                sliceEquivalency = Math.random() > 0.5 ? 0.1 : 2;
-                break;
-            case PIZZA_STYLES.CLOUD:
-                // Cloud pizza is infinite
-                finalizeResult(Infinity, pizzaType, slicesPerPerson, hoursDebugging, attendees, "Cloud pizza infinite cost!");
-                return;
-            case PIZZA_STYLES.PINEAPPLE:
-                // WiFi Pineapple pizza security joke
-                const resultDiv = elements.resultDiv();
-                if (resultDiv) {
-                    resultDiv.innerHTML = `<blockquote>WiFi Pineapple Pizza is an acquired taste.
-                    It's capturing your taste buds even as we speak. 🍍📡🍕</blockquote>`;
-                    calculationCompleted = true;
-                }
-                return;
-            case PIZZA_STYLES.QUANTUM:
-                // Quantum pizza exists in all states simultaneously
-                const states = ["1", "2", "3", "5", "8", "13", "21"];
-                pizzasRequired = states[Math.floor(Math.random() * states.length)];
-                finalizeResult(pizzasRequired, pizzaType, slicesPerPerson, hoursDebugging, attendees, 
-                    "Quantum pizza exists in all states until observed. The delivery person is both late and on time! 🔬🍕");
-                return;
-        }
-
-        // Calculate adjusted slices per pizza based on style
-        const adjustedSlicesPerPizza = SLICES_PER_PIZZA * sliceEquivalency;
-        
-        // Calculate total pizzas needed, rounded up
-        pizzasRequired = Math.ceil(totalSlicesNeeded / adjustedSlicesPerPizza);
-        
-        // Blockchain needs special handling for display
-        if (pizzaType === PIZZA_STYLES.BLOCKCHAIN) {
-            finalizeResult(pizzasRequired, pizzaType, slicesPerPerson, hoursDebugging, attendees, "Blockchain madness!");
-            return;
-        }
-        
-        // Standard calculation result
-        finalizeResult(pizzasRequired, pizzaType, slicesPerPerson, hoursDebugging, attendees, getHumorMessage(pizzasRequired));
-    }
-
-    function finalizeResult(pizzasRequired, pizzaType, slicesPerPerson, hoursDebugging, attendees, humor) {
-        let displayMessage = "";
-        if (!elements.resultDiv) return;
-        
-        // Format display message based on pizza type
-        if (pizzaType === PIZZA_STYLES.HOT_POCKETS) {
-            displayMessage = `<blockquote>You need <strong>${pizzasRequired}</strong> Hot Pocket(s) 
-                to feed <strong>${attendees}</strong> attendees for <strong>${hoursDebugging}</strong> hours 
-                of debugging. ${humor}</blockquote>`;
-        } else if (pizzaType === PIZZA_STYLES.CLOUD) {
-            displayMessage = `<blockquote>Cloud Pizza can feed any number of attendees, 
-                but watch out for that infinite billing! ☁️🍕</blockquote>`;
-        } else if (pizzaType === PIZZA_STYLES.BLOCKCHAIN) {
-            displayMessage = `<blockquote>You need <strong>${pizzasRequired}</strong> Blockchain Pizza(s) 
-                for <strong>${attendees}</strong> devs. ${humor} 🍕💸</blockquote>`;
-        } else if (pizzaType === PIZZA_STYLES.PINEAPPLE) {
-            return;
-        } else if (pizzaType === PIZZA_STYLES.QUANTUM) {
-            displayMessage = `<blockquote>You need <strong>${pizzasRequired}</strong> Quantum Pizza(s) 
-                for <strong>${attendees}</strong> hungry engineers. ${humor}</blockquote>`;
-        } else {
-            displayMessage = `<blockquote>You need <strong>${pizzasRequired}</strong> pizza(s) for 
-                <strong>${attendees}</strong> attendees, factoring in <strong>${hoursDebugging} hours</strong> 
-                of debugging. Using <strong>${getSelectedPizzaText()}</strong> style.<br><br>
-                ${humor}</blockquote>`;
-        }
-
-        // Only show the simple blockquote message for special pizza types
-        // For normal pizza types, we'll use the enhanced report instead
-        // This fixes the issue where reports were nested inside each other
-        if (pizzaType === PIZZA_STYLES.HOT_POCKETS || 
-            pizzaType === PIZZA_STYLES.CLOUD || 
-            pizzaType === PIZZA_STYLES.BLOCKCHAIN || 
-            pizzaType === PIZZA_STYLES.QUANTUM) {
-            elements.resultDiv.innerHTML = displayMessage;
-            calculationCompleted = true;
-            
-            // Check if enterprise threshold reached
-            checkEnterpriseEmail(pizzasRequired);
-            
-            // Run funny tests in console
-            performFunnyTests("Pizza");
-        } else {
-            // Clear previous results first
-            elements.resultDiv.innerHTML = '';
-            calculationCompleted = true;
-            
-            // Check if enterprise threshold reached
-            checkEnterpriseEmail(pizzasRequired);
-            
-            // Build and display enhanced report
-            constructPizzaReport(pizzasRequired, attendees, slicesPerPerson, hoursDebugging, humor);
-            
-            // Run funny tests in console
-            performFunnyTests("Pizza");
-        }
-    }
-    
-    function getSelectedPizzaText() {
-        return elements.pizzaTypeInput ? elements.pizzaTypeInput.options[elements.pizzaTypeInput.selectedIndex].text : "Unknown";
-    }
-    
-    function constructPizzaReport(pizzasRequired, attendees, slicesPerPerson, hoursDebugging, humor) {
-        if (!elements.resultDiv) return;
-        
-        // Create a styled report container with glass morphism effects
-        const reportContainer = document.createElement('div');
-        reportContainer.id = 'pizza-report-container';
-        reportContainer.style.border = '2px solid #4CAF50';
-        reportContainer.style.padding = '25px';
-        reportContainer.style.marginTop = '30px';
-        reportContainer.style.borderRadius = '12px';
-        reportContainer.style.backgroundColor = 'rgba(76, 175, 80, 0.08)';
-        reportContainer.style.position = 'relative';
-        reportContainer.style.backdropFilter = 'blur(10px)';
-        reportContainer.style.boxShadow = '0 10px 20px rgba(0, 0, 0, 0.1), 0 0 15px rgba(76, 175, 80, 0.2)';
-        reportContainer.style.overflow = 'hidden';
-        reportContainer.style.transition = 'all 0.3s ease';
-        
-        // Add subtle pizza background patterns
-        const patternBg = document.createElement('div');
-        patternBg.style.position = 'absolute';
-        patternBg.style.top = '0';
-        patternBg.style.left = '0';
-        patternBg.style.right = '0';
-        patternBg.style.bottom = '0';
-        patternBg.style.opacity = '0.1';
-        patternBg.style.backgroundImage = 'radial-gradient(circle, rgba(0,0,0,0.1) 1px, transparent 1px)';
-        patternBg.style.backgroundSize = '20px 20px';
-        patternBg.style.pointerEvents = 'none';
-        patternBg.style.zIndex = '0';
-        reportContainer.appendChild(patternBg);
-        
-        // Visual report header with 3D effect
-        const headerSection = document.createElement('div');
-        headerSection.style.position = 'relative';
-        headerSection.style.marginBottom = '25px';
-        headerSection.style.display = 'flex';
-        headerSection.style.alignItems = 'center';
-        headerSection.style.gap = '15px';
-        headerSection.style.zIndex = '1';
-        
-        // Animated pizza icon
-        const pizzaIcon = document.createElement('div');
-        pizzaIcon.innerHTML = '🍕';
-        pizzaIcon.style.fontSize = '38px';
-        pizzaIcon.style.animation = 'float 3s ease-in-out infinite';
-        pizzaIcon.style.position = 'relative';
-        pizzaIcon.style.filter = 'drop-shadow(0 5px 5px rgba(0,0,0,0.2))';
-        
-        // Report header with gradient
-        const header = document.createElement('h3');
-        header.innerHTML = 'Pizza Calculation Report';
-        header.style.background = 'linear-gradient(45deg, #4CAF50, #2196F3)';
-        header.style.backgroundClip = 'text';
-        header.style.WebkitBackgroundClip = 'text';
-        header.style.color = 'transparent';
-        header.style.WebkitTextFillColor = 'transparent';
-        header.style.fontSize = '1.8rem';
-        header.style.fontWeight = '800';
-        header.style.margin = '0';
-        header.style.textShadow = '0 2px 10px rgba(76, 175, 80, 0.2)';
-        header.style.position = 'relative';
-        
-        headerSection.appendChild(pizzaIcon);
-        headerSection.appendChild(header);
-        
-        // Calculate key metrics with some randomness and humor
-        const deploymentLatency = (Math.random() * 30 + 15).toFixed(2);
-        const efficiency = Math.floor(Math.random() * 40) + 60;
-        const foodComaRisk = hoursDebugging > 4 ? "HIGH" : (hoursDebugging > 2 ? "MODERATE" : "LOW");
-        const foodComaRiskValue = hoursDebugging > 4 ? 85 : (hoursDebugging > 2 ? 55 : 25);
-        const codeQualityImprovement = Math.floor(Math.random() * 80) + 20;
-        
-        // Generate code quality comment based on the improvement percentage
-        let codeQualityComment = "";
-        if (codeQualityImprovement > 80) {
-            codeQualityComment = "Clean code zen master level achieved!";
-        } else if (codeQualityImprovement > 60) {
-            codeQualityComment = "Senior engineers will approve this PR";
-        } else if (codeQualityImprovement > 40) {
-            codeQualityComment = "Pretty solid, just a few nitpicks in review";
-        } else {
-            codeQualityComment = "It works on your machine, so...ship it?";
-        }
-        
-        // Calculate budget impact
-        const budgetImpact = (pizzasRequired * (Math.random() * 15 + 10)).toFixed(2);
-        
-        // Get technical debt data
-        const techDebtData = getTechnicalDebtData();
-        
-        // Generate fun suggestions based on pizza count
-        let funSuggestion = "";
-        if (pizzasRequired > 20) {
-            funSuggestion = "Consider hiring a dedicated Pizza Resource Manager (PRM) for this project";
-        } else if (pizzasRequired > 10) {
-            funSuggestion = "Don't forget to create a Slack #pizza-emergency channel";
-        } else if (pizzasRequired > 5) {
-            funSuggestion = "Set up a proper pizza CI/CD pipeline for consistent delivery";
-        } else {
-            funSuggestion = "This fits within acceptable pizza budget parameters";
-        }
-        
-        // Create the full text report
-        const constructedReport =
-            `Pizza Calculation Report\n\n` +
-            `Number of Attendees: ${attendees}\n` +
-            `Selected Pizza Style: ${getSelectedPizzaText()}\n` +
-            `Slices Per Person: ${slicesPerPerson}\n` +
-            `Hours Debugging: ${hoursDebugging}\n` +
-            `Total Pizzas Required: ${pizzasRequired}\n\n` +
-            humor + "\n\n" + 
-            `Technical Details:\n` +
-            `- Pizza Deployment Latency: ${deploymentLatency} minutes\n` +
-            `- Hunger Satiation Efficiency: ${efficiency}%\n` +
-            `- Food Coma Risk: ${foodComaRisk}\n` +
-            `- Estimated Code Quality Improvement: ${codeQualityImprovement}% (${codeQualityComment})\n` +
-            `- Technical Debt Accumulation: ${techDebtData.debtPoints} story points\n` +
-            `- Refactoring Time Required: ${techDebtData.refactoringHours} hours\n` +
-            `- Budget Impact: $${budgetImpact}\n\n` +
-            `Recommendation: ${funSuggestion}`;
-
-        // Save the report for download
-        pizzaReport = constructedReport;
-        
-        // Create summary cards section
-        const summarySection = document.createElement('div');
-        summarySection.style.display = 'flex';
-        summarySection.style.flexWrap = 'wrap';
-        summarySection.style.gap = '15px';
-        summarySection.style.marginBottom = '25px';
-        summarySection.style.position = 'relative';
-        summarySection.style.zIndex = '1';
-        
-        // Create summary cards
-        function createSummaryCard(title, value, icon, color) {
-            const card = document.createElement('div');
-            card.style.flex = '1 0 calc(33.333% - 10px)';
-            card.style.minWidth = '180px';
-            card.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-            card.style.backdropFilter = 'blur(5px)';
-            card.style.border = `1px solid ${color}22`;
-            card.style.borderRadius = '8px';
-            card.style.padding = '15px';
-            card.style.display = 'flex';
-            card.style.flexDirection = 'column';
-            card.style.gap = '10px';
-            card.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.07)';
-            card.style.transition = 'transform 0.2s ease, box-shadow 0.2s ease';
-            
-            // Add hover effect
-            card.onmouseover = () => {
-                card.style.transform = 'translateY(-3px)';
-                card.style.boxShadow = `0 6px 12px rgba(0, 0, 0, 0.1), 0 0 10px ${color}33`;
-            };
-            card.onmouseout = () => {
-                card.style.transform = '';
-                card.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.07)';
-            };
-            
-            const iconEl = document.createElement('i');
-            iconEl.className = icon;
-            iconEl.style.fontSize = '24px';
-            iconEl.style.color = color;
-            iconEl.style.marginBottom = '5px';
-            
-            const titleEl = document.createElement('div');
-            titleEl.textContent = title;
-            titleEl.style.fontSize = '0.85rem';
-            titleEl.style.opacity = '0.8';
-            titleEl.style.fontWeight = '500';
-            
-            const valueEl = document.createElement('div');
-            valueEl.innerHTML = value;
-            valueEl.style.fontSize = '1.5rem';
-            valueEl.style.fontWeight = 'bold';
-            valueEl.style.color = color;
-            
-            card.appendChild(iconEl);
-            card.appendChild(titleEl);
-            card.appendChild(valueEl);
-            
-            return card;
-        }
-        
-        // Add primary summary cards
-        summarySection.appendChild(createSummaryCard('Total Pizzas', `${pizzasRequired}`, 'fas fa-pizza-slice', '#4CAF50'));
-        summarySection.appendChild(createSummaryCard('Attendees', `${attendees}`, 'fas fa-users', '#2196F3'));
-        summarySection.appendChild(createSummaryCard('Budget', `$${budgetImpact}`, 'fas fa-dollar-sign', '#FFC107'));
-        
-        // Create the terminal section with animated typing effect
-        const terminalContainer = document.createElement('div');
-        terminalContainer.style.position = 'relative';
-        terminalContainer.style.marginBottom = '25px';
-        terminalContainer.style.zIndex = '1';
-        
-        // Terminal window styling with macOS-like header
-        const terminal = document.createElement('div');
-        terminal.style.backgroundColor = '#0D1117';
-        terminal.style.borderRadius = '10px';
-        terminal.style.overflow = 'hidden';
-        terminal.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.2)';
-        
-        // Add macOS-like terminal header
-        const terminalHeader = document.createElement('div');
-        terminalHeader.style.backgroundColor = '#1C2128';
-        terminalHeader.style.padding = '10px 15px';
-        terminalHeader.style.display = 'flex';
-        terminalHeader.style.alignItems = 'center';
-        terminalHeader.style.gap = '5px';
-        
-        // Add terminal control buttons
-        const controlsContainer = document.createElement('div');
-        controlsContainer.style.display = 'flex';
-        controlsContainer.style.gap = '6px';
-        
-        const colors = ['#FF5F56', '#FFBD2E', '#27C93F'];
-        colors.forEach(color => {
-            const button = document.createElement('div');
-            button.style.width = '12px';
-            button.style.height = '12px';
-            button.style.borderRadius = '50%';
-            button.style.backgroundColor = color;
-            controlsContainer.appendChild(button);
+            }, index * 1500);
         });
         
-        // Add terminal title
-        const terminalTitle = document.createElement('div');
-        terminalTitle.textContent = "pizza-calculator --report";
-        terminalTitle.style.color = '#FFFFFF';
-        terminalTitle.style.fontSize = '12px';
-        terminalTitle.style.fontFamily = "'JetBrains Mono', 'Courier New', monospace";
-        terminalTitle.style.marginLeft = '10px';
+        // Update achievement display  
+        updateAchievementDisplay();
         
-        terminalHeader.appendChild(controlsContainer);
-        terminalHeader.appendChild(terminalTitle);
-        terminal.appendChild(terminalHeader);
-        
-        // Terminal content area
-        const results = document.createElement('pre');
-        results.style.margin = '0';
-        results.style.height = '300px';
-        results.style.maxHeight = '300px';
-        results.style.overflowY = 'auto';
-        results.style.overflowX = 'auto';
-        results.style.padding = '0';
-        results.style.backgroundColor = 'transparent';
-        results.style.color = '#10B981';
-        results.style.fontFamily = "'JetBrains Mono', 'Courier New', monospace";
-        results.style.fontSize = '14px';
-        results.style.lineHeight = '1.6';
-        results.style.whiteSpace = 'pre-wrap';
-        results.style.wordBreak = 'break-word';
-        
-        // Add container for content with padding
-        const contentContainer = document.createElement('div');
-        contentContainer.style.padding = '20px';
-        contentContainer.style.height = '100%';
-        contentContainer.style.boxSizing = 'border-box';
-        results.appendChild(contentContainer);
-        
-        // Add glow effect for cyberpunk aesthetic
-        const glowEffect = document.createElement('div');
-        glowEffect.style.position = 'absolute';
-        glowEffect.style.top = '0';
-        glowEffect.style.left = '0';
-        glowEffect.style.width = '100%';
-        glowEffect.style.height = '100%';
-        glowEffect.style.boxShadow = 'inset 0 0 30px rgba(16, 185, 129, 0.2)';
-        glowEffect.style.pointerEvents = 'none';
-        results.appendChild(glowEffect);
-        
-        terminal.appendChild(results);
-        terminalContainer.appendChild(terminal);
-        
-        // Add typing effect to terminal
-        const typeEffect = (text, i = 0) => {
-            if (i < text.length) {
-                // Add special color coding for specific parts
-                let currentChar = text.charAt(i);
-                
-                // Colorize headings and important data
-                if (i > 0 && text.charAt(i-1) === '\n' && currentChar === '-') {
-                    const span = document.createElement('span');
-                    span.style.color = '#f97316'; // Orange for bullet points
-                    span.textContent = currentChar;
-                    contentContainer.appendChild(span);
-                } else if (i > 0 && text.substr(i-12, 12) === 'Recommendation') {
-                    // Color the whole recommendation section
-                    const colonIndex = text.indexOf(':', i);
-                    if (colonIndex > i) {
-                        const span = document.createElement('span');
-                        span.style.color = '#8B5CF6'; // Purple for recommendations
-                        span.style.fontWeight = 'bold';
-                        
-                        // Get the heading + data
-                        const label = text.substring(i-12, colonIndex + 1);
-                        const value = text.substring(colonIndex + 1, text.indexOf('\n', colonIndex) > 0 ? text.indexOf('\n', colonIndex) : text.length);
-                        
-                        span.textContent = label;
-                        contentContainer.appendChild(span);
-                        
-                        const valueSpan = document.createElement('span');
-                        valueSpan.style.color = '#EC4899'; // Pink for recommendation value
-                        valueSpan.style.fontWeight = 'bold';
-                        valueSpan.textContent = value;
-                        contentContainer.appendChild(valueSpan);
-                        
-                        // Skip ahead
-                        i = (text.indexOf('\n', colonIndex) > 0 ? text.indexOf('\n', colonIndex) : text.length) - 1;
-                    } else {
-                        contentContainer.textContent += currentChar;
-                    }
-                } else if (currentChar === ':') {
-                    // Find if this is a label:value pair
-                    const labelStart = text.lastIndexOf('\n', i) > 0 ? text.lastIndexOf('\n', i) + 1 : 0;
-                    if (labelStart < i) {
-                        const label = text.substring(labelStart, i + 1);
-                        const colonIndex = i;
-                        let valueEnd = text.indexOf('\n', colonIndex);
-                        if (valueEnd < 0) valueEnd = text.length;
-                        const value = text.substring(colonIndex + 1, valueEnd);
-                        
-                        // Create label element with special color
-                        const labelSpan = document.createElement('span');
-                        labelSpan.style.color = '#38BDF8'; // Blue for labels
-                        labelSpan.textContent = label;
-                        contentContainer.appendChild(labelSpan);
-                        
-                        // Create value element with special color
-                        const valueSpan = document.createElement('span');
-                        valueSpan.style.color = '#34D399'; // Green for values
-                        valueSpan.style.fontWeight = 'bold';
-                        valueSpan.textContent = value;
-                        contentContainer.appendChild(valueSpan);
-                        
-                        // Skip ahead
-                        i = valueEnd - 1;
-                    } else {
-                        contentContainer.textContent += currentChar;
-                    }
-                } else if (i > 0 && text.substr(i-7, 7) === "Pizza C") {
-                    // Special heading for main title
-                    const newlineIndex = text.indexOf('\n', i);
-                    if (newlineIndex > i) {
-                        const heading = text.substring(i-7, newlineIndex);
-                        const headingSpan = document.createElement('span');
-                        headingSpan.style.color = '#F472B6'; // Pink for main heading
-                        headingSpan.style.fontWeight = 'bold';
-                        headingSpan.textContent = heading;
-                        contentContainer.appendChild(headingSpan);
-                        
-                        // Skip ahead
-                        i = newlineIndex - 1;
-                    } else {
-                        contentContainer.textContent += currentChar;
-                    }
-                } else if ((i > 0 && text.substr(i-13, 12) === "Technical De") || 
-                           (i > 0 && text.charAt(i-1) === '\n' && currentChar.match(/[A-Z]/))) {
-                    // Section headings
-                    const newlineIndex = text.indexOf('\n', i);
-                    if (newlineIndex > i) {
-                        const heading = text.substring(i-1, newlineIndex);
-                        const headingSpan = document.createElement('span');
-                        headingSpan.style.color = '#F43F5E'; // Red for secondary headings
-                        headingSpan.style.fontWeight = 'bold';
-                        headingSpan.textContent = heading;
-                        contentContainer.appendChild(headingSpan);
-                        
-                        // Skip ahead
-                        i = newlineIndex - 1;
-                    } else {
-                        contentContainer.textContent += currentChar;
-                    }
-                } else {
-                    contentContainer.textContent += currentChar;
-                }
-                
-                // Scroll to bottom as we type
-                results.scrollTop = results.scrollHeight;
-                
-                // Scroll the page to keep the report in view
-                if (i % 20 === 0) { // Only scroll occasionally to avoid jitters
-                    reportContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }
-                
-                // Add random tiny delays for realistic typing
-                setTimeout(() => typeEffect(text, i + 1), Math.random() * 10 + 5);
-            } else {
-                // Add blinking cursor at the end
-                const cursor = document.createElement('span');
-                cursor.textContent = '_';
-                cursor.style.animation = 'blink 1s infinite';
-                cursor.style.fontWeight = 'bold';
-                cursor.style.color = '#F472B6';
-                contentContainer.appendChild(cursor);
-                
-                // Final scroll
-                results.scrollTop = results.scrollHeight;
-                reportContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
-        };
-        
-        // Create detailed metrics section with charts
-        const detailsContainer = document.createElement('div');
-        detailsContainer.style.position = 'relative';
-        detailsContainer.style.zIndex = '1';
-        
-        // Metrics header
-        const metricsHeader = document.createElement('div');
-        metricsHeader.textContent = 'Key Metrics';
-        metricsHeader.style.fontSize = '1.25rem';
-        metricsHeader.style.fontWeight = '600';
-        metricsHeader.style.marginBottom = '15px';
-        metricsHeader.style.display = 'flex';
-        metricsHeader.style.alignItems = 'center';
-        metricsHeader.style.gap = '7px';
-        
-        // Add metrics icon
-        const metricsIcon = document.createElement('i');
-        metricsIcon.className = 'fas fa-chart-line';
-        metricsIcon.style.color = '#6366F1';
-        metricsHeader.prepend(metricsIcon);
-        
-        detailsContainer.appendChild(metricsHeader);
-        
-        // Create metrics grid
-        const metricsGrid = document.createElement('div');
-        metricsGrid.style.display = 'grid';
-        metricsGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(200px, 1fr))';
-        metricsGrid.style.gap = '15px';
-        metricsGrid.style.marginBottom = '20px';
-        
-        // Create enhanced metric boxes
-        function createEnhancedMetricBox(icon, label, value, color, description = '', progress = null) {
-            const box = document.createElement('div');
-            box.style.backgroundColor = 'rgba(255, 255, 255, 0.15)';
-            box.style.borderRadius = '8px';
-            box.style.padding = '15px';
-            box.style.display = 'flex';
-            box.style.flexDirection = 'column';
-            box.style.gap = '10px';
-            box.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
-            box.style.border = `1px solid ${color}22`;
-            box.style.transition = 'all 0.3s ease';
-            
-            // Add hover animation
-            box.onmouseover = () => {
-                box.style.transform = 'translateY(-5px)';
-                box.style.boxShadow = `0 8px 20px rgba(0, 0, 0, 0.1), 0 0 10px ${color}33`;
-            };
-            box.onmouseout = () => {
-                box.style.transform = '';
-                box.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)';
-            };
-            
-            const headerRow = document.createElement('div');
-            headerRow.style.display = 'flex';
-            headerRow.style.alignItems = 'center';
-            headerRow.style.justifyContent = 'space-between';
-            
-            const iconContainer = document.createElement('div');
-            iconContainer.style.backgroundColor = `${color}22`;
-            iconContainer.style.width = '36px';
-            iconContainer.style.height = '36px';
-            iconContainer.style.borderRadius = '8px';
-            iconContainer.style.display = 'flex';
-            iconContainer.style.alignItems = 'center';
-            iconContainer.style.justifyContent = 'center';
-            
-            const iconEl = document.createElement('i');
-            iconEl.className = icon;
-            iconEl.style.fontSize = '18px';
-            iconEl.style.color = color;
-            iconContainer.appendChild(iconEl);
-            
-            const labelEl = document.createElement('div');
-            labelEl.textContent = label;
-            labelEl.style.fontSize = '0.9rem';
-            labelEl.style.fontWeight = '600';
-            
-            headerRow.appendChild(iconContainer);
-            headerRow.appendChild(labelEl);
-            
-            const valueEl = document.createElement('div');
-            valueEl.innerHTML = value;
-            valueEl.style.fontSize = '1.75rem';
-            valueEl.style.fontWeight = 'bold';
-            valueEl.style.color = color;
-            valueEl.style.margin = '5px 0';
-            
-            box.appendChild(headerRow);
-            box.appendChild(valueEl);
-            
-            // Add progress bar if provided
-            if (progress !== null) {
-                const progressContainer = document.createElement('div');
-                progressContainer.style.height = '6px';
-                progressContainer.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
-                progressContainer.style.borderRadius = '3px';
-                progressContainer.style.overflow = 'hidden';
-                progressContainer.style.marginTop = '5px';
-                
-                const progressBar = document.createElement('div');
-                progressBar.style.height = '100%';
-                progressBar.style.width = '0%';
-                progressBar.style.backgroundColor = color;
-                progressBar.style.borderRadius = '3px';
-                progressBar.style.transition = 'width 1.5s ease-in-out';
-                
-                progressContainer.appendChild(progressBar);
-                box.appendChild(progressContainer);
-                
-                // Animate progress after a delay
-                setTimeout(() => {
-                    progressBar.style.width = `${progress}%`;
-                }, 300);
-            }
-            
-            // Add description if provided
-            if (description) {
-                const descriptionEl = document.createElement('div');
-                descriptionEl.textContent = description;
-                descriptionEl.style.fontSize = '0.85rem';
-                descriptionEl.style.color = document.body.classList.contains('dark-mode') ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)';
-                descriptionEl.style.marginTop = '5px';
-                box.appendChild(descriptionEl);
-            }
-            
-            return box;
-        }
-        
-        // Add custom metrics with progress bars and descriptions
-        metricsGrid.appendChild(createEnhancedMetricBox(
-            'fas fa-clock', 
-            'Delivery Time', 
-            `${deploymentLatency} mins`, 
-            '#FFD700',
-            'Estimated pizza arrival',
-            Math.min(parseFloat(deploymentLatency) * 1.5, 100)
-        ));
-        
-        metricsGrid.appendChild(createEnhancedMetricBox(
-            'fas fa-battery-three-quarters', 
-            'Satiation Level', 
-            `${efficiency}%`, 
-            '#4CAF50',
-            'Team hunger elimination',
-            efficiency
-        ));
-        
-        metricsGrid.appendChild(createEnhancedMetricBox(
-            'fas fa-bed', 
-            'Food Coma Risk', 
-            foodComaRisk, 
-            '#FF6347',
-            'Post-meal productivity impact',
-            foodComaRiskValue
-        ));
-        
-        metricsGrid.appendChild(createEnhancedMetricBox(
-            'fas fa-code', 
-            'Code Quality', 
-            `${codeQualityImprovement}%`, 
-            '#1E90FF',
-            codeQualityComment,
-            codeQualityImprovement
-        ));
-        
-        // Add technical debt metrics
-        if (techDebtData) {
-            const techDebtBox = createEnhancedMetricBox(
-                'fas fa-credit-card', 
-                'Tech Debt', 
-                `${techDebtData.debtPoints} pts`, 
-                '#E91E63',
-                'Click for detailed analysis',
-                Math.min(techDebtData.debtPoints * 2, 100)
-            );
-            techDebtBox.style.cursor = 'pointer';
-            techDebtBox.title = 'Click to see technical debt details';
-            techDebtBox.addEventListener('click', () => showTechDebtDetails(techDebtData));
-            metricsGrid.appendChild(techDebtBox);
-            
-            metricsGrid.appendChild(createEnhancedMetricBox(
-                'fas fa-tools', 
-                'Refactoring', 
-                `${techDebtData.refactoringHours} hrs`, 
-                '#9C27B0',
-                'Estimated cleanup time',
-                Math.min(techDebtData.refactoringHours * 2.5, 100)
-            ));
-        }
-        
-        // Add budget metrics with dollar sign
-        metricsGrid.appendChild(createEnhancedMetricBox(
-            'fas fa-dollar-sign', 
-            'Budget Impact', 
-            `$${budgetImpact}`, 
-            '#67E8F9',
-            'Expense account damage',
-            Math.min(budgetImpact * 1, 100)
-        ));
-        
-        detailsContainer.appendChild(metricsGrid);
-        
-        // Add share and action buttons section
-        const actionSection = document.createElement('div');
-        actionSection.style.display = 'flex';
-        actionSection.style.gap = '10px';
-        actionSection.style.marginTop = '20px';
-        actionSection.style.justifyContent = 'flex-end';
-        actionSection.style.flexWrap = 'wrap';
-        actionSection.style.position = 'relative';
-        actionSection.style.zIndex = '1';
-        
-        // Create action button function
-        function createActionButton(icon, text, onClick, color, isPrimary = false) {
-            const button = document.createElement('button');
-            button.type = 'button';
-            button.style.display = 'flex';
-            button.style.alignItems = 'center';
-            button.style.gap = '8px';
-            button.style.padding = '10px 16px';
-            button.style.borderRadius = '8px';
-            button.style.border = 'none';
-            button.style.fontSize = '14px';
-            button.style.fontWeight = '600';
-            button.style.cursor = 'pointer';
-            button.style.transition = 'all 0.2s ease';
-            
-            if (isPrimary) {
-                button.style.backgroundColor = color;
-                button.style.color = 'white';
-                button.style.boxShadow = `0 4px 6px ${color}33`;
-            } else {
-                button.style.backgroundColor = `${color}22`;
-                button.style.color = color;
-                button.style.boxShadow = `0 4px 6px rgba(0, 0, 0, 0.05)`;
-            }
-            
-            button.onmouseover = () => {
-                button.style.transform = 'translateY(-2px)';
-                if (isPrimary) {
-                    button.style.boxShadow = `0 6px 12px ${color}55`;
-                } else {
-                    button.style.boxShadow = `0 6px 12px rgba(0, 0, 0, 0.1)`;
-                    button.style.backgroundColor = `${color}33`;
-                }
-            };
-            
-            button.onmouseout = () => {
-                button.style.transform = '';
-                if (isPrimary) {
-                    button.style.boxShadow = `0 4px 6px ${color}33`;
-                } else {
-                    button.style.boxShadow = `0 4px 6px rgba(0, 0, 0, 0.05)`;
-                    button.style.backgroundColor = `${color}22`;
-                }
-            };
-            
-            button.onclick = onClick;
-            
-            const iconEl = document.createElement('i');
-            iconEl.className = icon;
-            
-            const textEl = document.createElement('span');
-            textEl.textContent = text;
-            
-            button.appendChild(iconEl);
-            button.appendChild(textEl);
-            
-            return button;
-        }
-        
-        // Add action buttons
-        actionSection.appendChild(createActionButton(
-            'fas fa-copy', 
-            'Copy Report', 
-            () => copyReportToClipboard(), 
-            '#3B82F6'
-        ));
-        
-        actionSection.appendChild(createActionButton(
-            'fas fa-download', 
-            'Download', 
-            () => downloadReport(), 
-            '#10B981'
-        ));
-        
-        actionSection.appendChild(createActionButton(
-            'fas fa-robot', 
-            'AI Toppings', 
-            () => showAIToppings(), 
-            '#8B5CF6'
-        ));
-        
-        actionSection.appendChild(createActionButton(
-            'fas fa-share-alt', 
-            'Share Order', 
-            () => {
-                showToast("Sharing pizza order with the team...", "success");
-                // Fun animation that could be added here
-            }, 
-            '#EC4899',
-            true
-        ));
-        
-        // Add random pizza facts section
-        const pizzaFacts = [
-            "The average programmer consumes 2.4x more pizza than non-programmers.",
-            "Studies show a direct correlation between pizza quality and code quality.",
-            "Pizza was the official fuel of the Apollo 11 mission control team.",
-            "The first bitcoin purchase was for two pizzas worth 10,000 BTC (now worth millions).",
-            "77% of midnight debugging sessions involve pizza delivery.",
-            "The 'time to pizza' metric is used by top tech companies to measure team efficiency.",
-            "Google's cafeterias serve over 5,000 pizzas daily to hungry engineers.",
-            "The 'Pizza Driven Development' methodology was first documented in 2015.",
-            "Quantum computing researchers consume 3x more toppings than traditional CS researchers."
-        ];
-        
-        const randomFact = pizzaFacts[Math.floor(Math.random() * pizzaFacts.length)];
-        
-        const factBox = document.createElement('div');
-        factBox.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
-        factBox.style.border = '1px solid rgba(99, 102, 241, 0.2)';
-        factBox.style.borderRadius = '8px';
-        factBox.style.padding = '15px';
-        factBox.style.marginTop = '25px';
-        factBox.style.display = 'flex';
-        factBox.style.alignItems = 'center';
-        factBox.style.gap = '15px';
-        factBox.style.position = 'relative';
-        factBox.style.zIndex = '1';
-        
-        const lightbulbIcon = document.createElement('i');
-        lightbulbIcon.className = 'fas fa-lightbulb';
-        lightbulbIcon.style.color = '#6366F1';
-        lightbulbIcon.style.fontSize = '24px';
-        
-        const factText = document.createElement('div');
-        factText.innerHTML = `<strong>Pizza Engineering Fact:</strong> ${randomFact}`;
-        factText.style.fontSize = '0.9rem';
-        
-        factBox.appendChild(lightbulbIcon);
-        factBox.appendChild(factText);
-        
-        // Assemble all the report sections
-        reportContainer.appendChild(headerSection);
-        reportContainer.appendChild(summarySection);
-        reportContainer.appendChild(terminalContainer);
-        reportContainer.appendChild(detailsContainer);
-        reportContainer.appendChild(factBox);
-        reportContainer.appendChild(actionSection);
-        
-        // Start typing effect
-        typeEffect(constructedReport);
-        
-        // Add to result div
-        elements.resultDiv.appendChild(reportContainer);
-    }
-
-    // Humor messages
-    function getHumorMessage(pizzasRequired) {
-        if (pizzasRequired >= ENTERPRISE_THRESHOLD) {
-            return "You've reached Pied Piper-level scaling. Time for enterprise pizza solutions with distributed toppings and fault-tolerant sauces! 🍕📞";
-        } else if (pizzasRequired > 20) {
-            return "CRITICAL ALERT: Pizza overflow detected! Consider implementing a pizza sharding strategy for optimal distribution. 🍕🛠️";
-        } else if (pizzasRequired > 10) {
-            return "That's a hefty pizza cluster! Use horizontal slice-scaling with Redis caching for optimal hunger management. ☁️🍕";
-        } else if (pizzasRequired > 5) {
-            return "A respectable order! Enable pizza logs for post-mortem analysis of slice consumption patterns. 📊🍕";
-        } else if (pizzasRequired > 3) {
-            return "A moderate batch. Implement auto-scaling for slice resources to handle unexpected hunger spikes. 🍕🔄";
-        } else if (pizzasRequired === 1) {
-            return "A single pizza? That's like running production on a Raspberry Pi—bold strategy, but mind the resource constraints! 🎛️🍕";
-        } else if (pizzasRequired === 0) {
-            return "Zero pizzas? Did you try turning hunger off and on again? 🔌🍕";
-        } else {
-            return "Minimal pizza allocation detected. Implement redundant pizza ordering for high availability of calorie resources. 📦🍕";
-        }
-    }
-
-    // Enterprise email handling
-    window.checkEnterpriseEmail = function(pizzasRequired) {
-        if (!elements.emailPromptSection) return;
-        
-        if (pizzasRequired >= ENTERPRISE_THRESHOLD) {
-            elements.emailPromptSection.style.display = 'block';
-        } else {
-            elements.emailPromptSection.style.display = 'none';
-        }
-    };
-
-    window.submitEmail = function() {
-        const emailInput = document.getElementById('emailInput');
-        if (!emailInput) return;
-        
-        const email = emailInput.value.trim();
-        if (!email) {
-            showToast("Please enter a valid email address!");
-            return;
-        }
-        
-        console.log(`Enterprise pizza inquiry from: ${email}`);
-        const responseTime = Math.floor(Math.random() * 30) + 30;
-        showToast(`Thanks! Our Enterprise Pizza Sales Team will contact you within ${responseTime} business minutes. 🍕💼`);
-    };
-
-    // Download report functionality
-    window.downloadReport = function() {
-        if (!calculationCompleted || !pizzaReport) {
-            showToast("Please perform a calculation first!");
-            return;
-        }
-        
-        const blob = new Blob([pizzaReport], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        
-        if (!elements.downloadLink) return;
-        
-        elements.downloadLink.href = url;
-        elements.downloadLink.download = `Pizza_Calculation_Report_${new Date().toISOString().slice(0,10)}.txt`;
-        elements.downloadLink.click();
-        URL.revokeObjectURL(url);
-    };
-
-    // Toast notification with cached elements for better performance
-    window.showToast = function(message, type = "info") {
-        // Cache toast elements for better performance
-        if (!window.toastElements) {
-            window.toastElements = {
-                toast: document.getElementById('toast'),
-                messageEl: document.getElementById('toast-message')
-            };
-        }
-        
-        const { toast, messageEl } = window.toastElements;
-        if (!toast || !messageEl) {
-            // Fallback to the old method if new elements not found
-            if (!elements.toast) return;
-            
-            elements.toast.textContent = message;
-            elements.toast.className = "toast show";
-            setTimeout(() => {
-                elements.toast.className = elements.toast.className.replace("show", "");
-            }, 3000);
-            return;
-        }
-        
-        messageEl.textContent = message;
-        
-        // Set icon based on type
-        const iconEl = toast.querySelector('i');
-        if (iconEl) {
-            iconEl.className = type === "success" ? "fas fa-check-circle" : 
-                              type === "error" ? "fas fa-exclamation-circle" : 
-                              type === "warning" ? "fas fa-exclamation-triangle" : 
-                              "fas fa-info-circle";
-            
-            iconEl.style.color = type === "success" ? "#4CAF50" : 
-                               type === "error" ? "#F44336" : 
-                               type === "warning" ? "#FF9800" : 
-                               "#2196F3";
-        }
-        
-        toast.className = "toast show";
-        setTimeout(() => {
-            toast.className = toast.className.replace("show", "");
-        }, 3000);
-    };
-
-    // Console testing
-    window.performFunnyTests = function(calculatorName) {
-        console.log(`\n--- ${calculatorName} Additional Testing Suite Initiated ---`);
-        console.log("[Load Test] Simulating thousands of hungry devs hitting the server for pizza calculations...");
-        console.log("[Unit Test] Checking if slices per person is not negative or infinite... Looks good so far!");
-        console.log("[UX Test] Asking random dev if they prefer pineapple on pizza. 50% meltdown rate detected!");
-        console.log("[Security Test] Attempting to inject 'DROP TABLE Pizza' into debug hours field. Denied!");
-        console.log("[Git Test] Checking if pizza branches can be merged without conflicts. Topping conflicts resolved!");
-        console.log("[DevOps Test] CI/CD pipeline successfully deployed hot pizza to production environment.");
-        console.log("[Docker Test] Pizza successfully containerized. All toppings isolated from host system.");
-        console.log("[Technical Debt Test] Measuring pizza-based technical debt accumulation... concerns noted.");
-        console.log("[All Tests Passed] The Pizza Calculator is stable...ish.\n");
-    };
-    
-    // Technical Debt Calculator
-    let techDebtData = null;
-    
-    function calculateTechnicalDebt() {
-        // Reset existing technical debt data
-        techDebtData = null;
-        
-        // Wait for values to be available
-        setTimeout(() => {
-            const hoursDebugging = parseInt(elements.hoursDebuggingInput.value, 10) || 0;
-            const slicesPerPerson = parseInt(elements.slicesPerPersonInput.value, 10) || 0;
-            const attendees = parseInt(elements.attendeesInput.value, 10) || 0;
-            const pizzaType = elements.pizzaTypeInput.value;
-            
-            // Calculate the technical debt
-            techDebtData = computeTechnicalDebt(hoursDebugging, slicesPerPerson, attendees, pizzaType);
-        }, 500);
+        // Save to localStorage
+        localStorage.setItem('pizzaAchievements', JSON.stringify(achievements));
     }
     
-    function getTechnicalDebtData() {
-        if (!techDebtData) {
-            const hoursDebugging = parseInt(elements.hoursDebuggingInput.value, 10) || 0;
-            const slicesPerPerson = parseInt(elements.slicesPerPersonInput.value, 10) || 0;
-            const attendees = parseInt(elements.attendeesInput.value, 10) || 0;
-            const pizzaType = elements.pizzaTypeInput.value;
-            
-            return computeTechnicalDebt(hoursDebugging, slicesPerPerson, attendees, pizzaType);
-        }
-        return techDebtData;
-    }
-    
-    function computeTechnicalDebt(hoursDebugging, slicesPerPerson, attendees, pizzaType) {
-        // Base calculation for technical debt points
-        let debtPoints = hoursDebugging * 3; // 3 story points per hour of debugging
-        
-        // More people eating more pizza = more technical debt due to food coma
-        const totalSlices = attendees * slicesPerPerson;
-        debtPoints += Math.floor(totalSlices / 5); // 1 point per 5 slices consumed
-        
-        // Special modifiers based on pizza type
-        switch (pizzaType) {
-            case PIZZA_STYLES.NY:
-                // NY Pizza is good, but still adds some debt
-                debtPoints *= 1.0;
-                break;
-            case PIZZA_STYLES.CHICAGO:
-                // Deep dish = deep debt
-                debtPoints *= 1.5;
-                break;
-            case PIZZA_STYLES.HOT_POCKETS:
-                // Hot pockets lead to quick & dirty solutions
-                debtPoints *= 2.0;
-                break;
-            case PIZZA_STYLES.BLOCKCHAIN:
-                // Blockchain pizza may cause refactoring challenges
-                debtPoints = Math.floor(debtPoints * (Math.random() > 0.5 ? 3.0 : 0.5));
-                break;
-            case PIZZA_STYLES.CLOUD:
-                // Cloud pizza scales your technical debt to infinity
-                debtPoints = Math.floor(debtPoints * 1.7);
-                break;
-            case PIZZA_STYLES.QUANTUM:
-                // Quantum pizza creates superposition of clean and messy code
-                debtPoints = Math.floor(debtPoints * (Math.random() + 0.5));
-                break;
-            case PIZZA_STYLES.PINEAPPLE:
-                // WiFi Pineapple pizza may expose security flaws
-                debtPoints *= 1.3;
-                break;
-        }
-        
-        // Add some randomness (±30%)
-        const randomFactor = 0.7 + (Math.random() * 0.6);
-        debtPoints = Math.floor(debtPoints * randomFactor);
-        
-        // Calculate refactoring hours required (each point takes 2-4 hours to fix)
-        const refactoringHours = Math.ceil(debtPoints * (2 + Math.floor(Math.random() * 3)));
-        
-        // Generate tech debt descriptions
-        const techDebtDescriptions = generateTechDebtDescriptions(debtPoints);
-        
-        return {
-            debtPoints,
-            refactoringHours,
-            techDebtDescriptions
-        };
-    }
-    
-    function generateTechDebtDescriptions(debtPoints) {
-        const lowDebtItems = [
-            "Unused imports in code",
-            "Minor code duplication",
-            "Functions slightly too long",
-            "Missing some unit tests",
-            "Documentation needs updates"
-        ];
-        
-        const mediumDebtItems = [
-            "Significant code duplication",
-            "Inconsistent error handling",
-            "Complex conditional logic",
-            "Magic numbers throughout code", 
-            "Missing integration tests",
-            "No load tests for high traffic scenarios"
-        ];
-        
-        const highDebtItems = [
-            "God objects with too many responsibilities",
-            "Tightly coupled modules",
-            "Deprecated library dependencies",
-            "Multiple responsibility violations",
-            "Security vulnerabilities",
-            "No CI/CD pipeline",
-            "Hard-coded credentials"
-        ];
-        
-        const criticalDebtItems = [
-            "No backup strategy",
-            "Using eval() for parsing JSON",
-            "Database queries in loops",
-            "Unreviewed code in production",
-            "No monitoring or alerting",
-            "Zero test coverage",
-            "Code commented with 'TODO: Fix later'"
-        ];
-        
-        const result = [];
-        
-        // Select items based on debt level
-        if (debtPoints < 10) {
-            // 1-2 low debt items
-            const count = Math.floor(Math.random() * 2) + 1;
-            for (let i = 0; i < count; i++) {
-                result.push(lowDebtItems[Math.floor(Math.random() * lowDebtItems.length)]);
-            }
-        } else if (debtPoints < 20) {
-            // 2-3 items, mostly low with some medium
-            const lowCount = Math.floor(Math.random() * 2) + 1;
-            const medCount = Math.floor(Math.random() * 2) + 1;
-            
-            for (let i = 0; i < lowCount; i++) {
-                result.push(lowDebtItems[Math.floor(Math.random() * lowDebtItems.length)]);
-            }
-            
-            for (let i = 0; i < medCount; i++) {
-                result.push(mediumDebtItems[Math.floor(Math.random() * mediumDebtItems.length)]);
-            }
-        } else if (debtPoints < 35) {
-            // 3-4 items with medium and high
-            const medCount = Math.floor(Math.random() * 2) + 1;
-            const highCount = Math.floor(Math.random() * 2) + 1;
-            
-            for (let i = 0; i < medCount; i++) {
-                result.push(mediumDebtItems[Math.floor(Math.random() * mediumDebtItems.length)]);
-            }
-            
-            for (let i = 0; i < highCount; i++) {
-                result.push(highDebtItems[Math.floor(Math.random() * highDebtItems.length)]);
-            }
-        } else {
-            // 4-5 items with high and critical
-            const highCount = Math.floor(Math.random() * 2) + 1;
-            const critCount = Math.floor(Math.random() * 3) + 1;
-            
-            for (let i = 0; i < highCount; i++) {
-                result.push(highDebtItems[Math.floor(Math.random() * highDebtItems.length)]);
-            }
-            
-            for (let i = 0; i < critCount; i++) {
-                result.push(criticalDebtItems[Math.floor(Math.random() * criticalDebtItems.length)]);
-            }
-        }
-        
-        // Ensure uniqueness
-        return [...new Set(result)];
-    }
-    
-    // Function to display technical debt details in a modal-like window
-    function showTechDebtDetails(techDebtData) {
-        if (!techDebtData || !techDebtData.techDebtDescriptions || techDebtData.techDebtDescriptions.length === 0) {
-            showToast("No technical debt details available", "warning");
-            return;
-        }
-        
-        // Check if vibe mode is active - if so, maybe randomly delete production
-        if (window.vibeModeActive && Math.random() < 0.5) {
-            fakeDeleteProduction();
-            return;
-        }
-        
-        // Create a modal-like container
-        const modal = document.createElement('div');
-        modal.className = 'tech-debt-modal';
-        modal.style.position = 'fixed';
-        modal.style.top = '0';
-        modal.style.left = '0';
-        modal.style.right = '0';
-        modal.style.bottom = '0';
-        modal.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-        modal.style.display = 'flex';
-        modal.style.alignItems = 'center';
-        modal.style.justifyContent = 'center';
-        modal.style.zIndex = '9999';
-        modal.style.opacity = '0';
-        modal.style.transition = 'opacity 0.3s ease';
-        
-        // Create the modal content
-        const modalContent = document.createElement('div');
-        modalContent.className = 'tech-debt-modal-content';
-        modalContent.style.backgroundColor = '#FFF';
-        modalContent.style.borderRadius = '8px';
-        modalContent.style.padding = '30px';
-        modalContent.style.width = '80%';
-        modalContent.style.maxWidth = '800px';
-        modalContent.style.maxHeight = '80vh';
-        modalContent.style.overflow = 'auto';
-        modalContent.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.5)';
-        modalContent.style.transform = 'translateY(-20px)';
-        modalContent.style.transition = 'transform 0.3s ease';
-        
-        // Dark mode support
-        if (document.body.classList.contains('dark-mode')) {
-            modalContent.style.backgroundColor = '#1E1E1E';
-            modalContent.style.color = '#E0E0E0';
-            modalContent.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.8)';
-        }
-        
-        // Create modal header
-        const modalHeader = document.createElement('div');
-        modalHeader.style.display = 'flex';
-        modalHeader.style.alignItems = 'center';
-        modalHeader.style.justifyContent = 'space-between';
-        modalHeader.style.marginBottom = '20px';
-        modalHeader.style.borderBottom = '1px solid #E0E0E0';
-        modalHeader.style.paddingBottom = '10px';
-        
-        if (document.body.classList.contains('dark-mode')) {
-            modalHeader.style.borderBottomColor = '#333';
-        }
-        
-        const modalTitle = document.createElement('h3');
-        modalTitle.textContent = 'Technical Debt Analysis';
-        modalTitle.style.color = '#E91E63'; // Same color as the tech debt metric
-        modalTitle.style.margin = '0';
-        modalTitle.style.fontSize = '1.5rem';
-        
-        const closeButton = document.createElement('button');
-        closeButton.innerHTML = '&times;';
-        closeButton.style.background = 'none';
-        closeButton.style.border = 'none';
-        closeButton.style.fontSize = '1.8rem';
-        closeButton.style.cursor = 'pointer';
-        closeButton.style.padding = '0 10px';
-        closeButton.style.color = document.body.classList.contains('dark-mode') ? '#E0E0E0' : '#333';
-        closeButton.addEventListener('click', () => {
-            // Animate closing
-            modal.style.opacity = '0';
-            modalContent.style.transform = 'translateY(-20px)';
-            
-            setTimeout(() => {
-                modal.remove();
-            }, 300);
-        });
-        
-        modalHeader.appendChild(modalTitle);
-        modalHeader.appendChild(closeButton);
-        
-        // Create modal body
-        const modalBody = document.createElement('div');
-        
-        // Add summary
-        const debtSummary = document.createElement('div');
-        debtSummary.style.marginBottom = '20px';
-        debtSummary.style.padding = '15px';
-        debtSummary.style.backgroundColor = 'rgba(233, 30, 99, 0.1)';
-        debtSummary.style.borderRadius = '8px';
-        debtSummary.style.borderLeft = '4px solid #E91E63';
-        
-        debtSummary.innerHTML = `
-            <p style="margin: 0 0 10px 0; font-weight: bold;">Technical Debt Summary:</p>
-            <div style="display: flex; flex-wrap: wrap; gap: 15px;">
-                <div style="flex: 1; min-width: 200px;">
-                    <div style="font-size: 0.9rem; opacity: 0.7;">Technical Debt Score</div>
-                    <div style="font-size: 1.5rem; font-weight: bold;">${techDebtData.debtPoints} story points</div>
-                </div>
-                <div style="flex: 1; min-width: 200px;">
-                    <div style="font-size: 0.9rem; opacity: 0.7;">Estimated Refactoring Time</div>
-                    <div style="font-size: 1.5rem; font-weight: bold;">${techDebtData.refactoringHours} hours</div>
-                </div>
+    // Show achievement notification
+    function showAchievement(achievement) {
+        const notification = document.createElement('div');
+        notification.className = 'achievement-notification';
+        notification.innerHTML = `
+            <div class="achievement-icon">${achievement.icon}</div>
+            <div class="achievement-content">
+                <div class="achievement-title">Achievement Unlocked!</div>
+                <div class="achievement-name">${achievement.name}</div>
+                <div class="achievement-desc">${achievement.description}</div>
             </div>
         `;
         
-        // Add severity rating
-        let severityText, severityColor;
-        if (techDebtData.debtPoints < 10) {
-            severityText = "Low";
-            severityColor = "#4CAF50"; // Green
-        } else if (techDebtData.debtPoints < 20) {
-            severityText = "Moderate";
-            severityColor = "#FF9800"; // Orange
-        } else if (techDebtData.debtPoints < 35) {
-            severityText = "High";
-            severityColor = "#FF5722"; // Deep Orange
-        } else {
-            severityText = "Critical";
-            severityColor = "#F44336"; // Red
-        }
-        
-        const severityRating = document.createElement('div');
-        severityRating.style.marginTop = '10px';
-        severityRating.style.fontWeight = 'bold';
-        severityRating.innerHTML = `Severity: <span style="color: ${severityColor};">${severityText}</span>`;
-        debtSummary.appendChild(severityRating);
-        
-        modalBody.appendChild(debtSummary);
-        
-        // Add detected issues
-        const issuesTitle = document.createElement('h4');
-        issuesTitle.textContent = 'Detected Issues:';
-        issuesTitle.style.marginBottom = '15px';
-        modalBody.appendChild(issuesTitle);
-        
-        const issuesList = document.createElement('ul');
-        issuesList.style.paddingLeft = '20px';
-        
-        techDebtData.techDebtDescriptions.forEach(issue => {
-            const issueItem = document.createElement('li');
-            issueItem.textContent = issue;
-            issueItem.style.marginBottom = '10px';
-            issuesList.appendChild(issueItem);
-        });
-        
-        modalBody.appendChild(issuesList);
-        
-        // Add a funny quote
-        const funnyQuotes = [
-            "The code you write today becomes the legacy code of tomorrow. Unless it's pizza code, then it's just delicious.",
-            "Technical debt is like pizza debt - you'll have to pay for it eventually, with interest!",
-            "Programmers can eat pizza for breakfast, lunch, and dinner, but technical debt can eat your entire project.",
-            "For every slice of pizza consumed, approximately 0.7 lines of dubious code are written.",
-            "Code quality decreases proportionally to the number of pizza boxes in the recycling bin.",
-            "Pizza-driven development: when your code architecture is inspired by how much pizza you've had."
-        ];
-        
-        const randomQuote = funnyQuotes[Math.floor(Math.random() * funnyQuotes.length)];
-        
-        const quoteSection = document.createElement('div');
-        quoteSection.style.marginTop = '30px';
-        quoteSection.style.padding = '15px';
-        quoteSection.style.backgroundColor = 'rgba(156, 39, 176, 0.1)';
-        quoteSection.style.borderRadius = '8px';
-        quoteSection.style.fontStyle = 'italic';
-        quoteSection.style.textAlign = 'center';
-        quoteSection.style.borderLeft = '4px solid #9C27B0';
-        quoteSection.textContent = `"${randomQuote}"`;
-        
-        modalBody.appendChild(quoteSection);
-        
-        // Add actions
-        const actionsSection = document.createElement('div');
-        actionsSection.style.marginTop = '30px';
-        actionsSection.style.display = 'flex';
-        actionsSection.style.justifyContent = 'flex-end';
-        actionsSection.style.gap = '15px';
-        
-        const refactorButton = document.createElement('button');
-        refactorButton.textContent = "Order More Pizza & Refactor";
-        refactorButton.style.backgroundColor = '#9C27B0';
-        refactorButton.style.color = 'white';
-        refactorButton.style.border = 'none';
-        refactorButton.style.padding = '10px 20px';
-        refactorButton.style.borderRadius = '4px';
-        refactorButton.style.cursor = 'pointer';
-        refactorButton.style.fontWeight = 'bold';
-        refactorButton.addEventListener('click', () => {
-            showToast("Pizza ordered! Refactoring scheduled for next sprint.", "success");
-            
-            // Animate closing
-            modal.style.opacity = '0';
-            modalContent.style.transform = 'translateY(-20px)';
-            
-            setTimeout(() => {
-                modal.remove();
-            }, 300);
-        });
-        
-        const ignoreButton = document.createElement('button');
-        ignoreButton.textContent = "Ignore (Ship it!)";
-        ignoreButton.style.backgroundColor = document.body.classList.contains('dark-mode') ? '#333' : '#E0E0E0';
-        ignoreButton.style.color = document.body.classList.contains('dark-mode') ? '#E0E0E0' : '#333';
-        ignoreButton.style.border = 'none';
-        ignoreButton.style.padding = '10px 20px';
-        ignoreButton.style.borderRadius = '4px';
-        ignoreButton.style.cursor = 'pointer';
-        ignoreButton.addEventListener('click', () => {
-            showToast("Technical debt ignored. Future you will be very upset!", "warning");
-            
-            // Animate closing
-            modal.style.opacity = '0';
-            modalContent.style.transform = 'translateY(-20px)';
-            
-            setTimeout(() => {
-                modal.remove();
-            }, 300);
-        });
-        
-        actionsSection.appendChild(ignoreButton);
-        actionsSection.appendChild(refactorButton);
-        
-        modalBody.appendChild(actionsSection);
-        
-        // Assemble the modal
-        modalContent.appendChild(modalHeader);
-        modalContent.appendChild(modalBody);
-        modal.appendChild(modalContent);
-        
-        // Add to document
-        document.body.appendChild(modal);
-        
-        // In vibe mode, sometimes the modal gets funky
-        if (window.vibeModeActive) {
-            if (Math.random() > 0.7) {
-                // Make the modal move around
-                modalContent.style.animation = 'walk 10s infinite';
-            } else if (Math.random() > 0.6) {
-                // Make the modal spin slowly
-                modalContent.style.animation = 'rotateMonkey 15s linear infinite';
-            }
-        }
-        
-        // Add listener to close when clicking outside
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                // Animate closing
-                modal.style.opacity = '0';
-                modalContent.style.transform = 'translateY(-20px)';
-                
-                setTimeout(() => {
-                    modal.remove();
-                }, 300);
-            }
-        });
-        
-        // Animate opening
-        setTimeout(() => {
-            modal.style.opacity = '1';
-            modalContent.style.transform = 'translateY(0)';
-        }, 10);
-    }
-    
-    // New! Chaos Monkey test with wild animations
-    function runChaosMonkey() {
-        if (!elements.resultDiv) return;
-        
-        // If vibe mode is active, chaos is even more chaotic!
-        const isVibeMode = window.vibeModeActive || false;
-        const chaosFactor = isVibeMode ? 2 : 1;
-        
-        // Add styles for monkey animations if not already added
-        if (!document.getElementById('monkey-styles')) {
-            const monkeyStyles = document.createElement('style');
-            monkeyStyles.id = 'monkey-styles';
-            monkeyStyles.textContent = `
-                @keyframes shake {
-                    0%, 100% { transform: translateX(0); }
-                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-                    20%, 40%, 60%, 80% { transform: translateX(5px); }
-                }
-                
-                @keyframes flyingMonkey {
-                    0% { transform: translate(calc(-100% - 100px), calc(100vh * var(--y))); opacity: 0; }
-                    10% { opacity: 1; }
-                    60% { transform: translate(calc(100vw + 100px), calc(100vh * var(--y))); opacity: 1; }
-                    100% { transform: translate(calc(100vw + 100px), calc(100vh * var(--y))); opacity: 0; }
-                }
-                
-                @keyframes jumpingMonkey {
-                    0% { transform: translate(var(--x), 100vh); }
-                    40% { transform: translate(var(--x), calc(100vh - var(--jump-height))); }
-                    50% { transform: translate(var(--x), calc(100vh - var(--jump-height))); }
-                    100% { transform: translate(var(--x), 100vh); }
-                }
-                
-                @keyframes rotateMonkey {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-                
-                @keyframes blink {
-                    0%, 100% { opacity: 1; }
-                    50% { opacity: 0; }
-                }
-                
-                .flying-monkey {
+        // Add styles if not already added
+        if (!document.getElementById('achievement-styles')) {
+            const styles = document.createElement('style');
+            styles.id = 'achievement-styles';
+            styles.textContent = `
+                .achievement-notification {
                     position: fixed;
-                    z-index: 9999;
-                    font-size: 50px;
-                    user-select: none;
-                    pointer-events: none;
-                    filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.5));
+                    top: 20px;
+                    right: -400px;
+                    width: 350px;
+                    background: white;
+                    border: 2px solid var(--corp-primary);
+                    border-radius: 8px;
+                    padding: 1rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                    z-index: 10000;
+                    animation: slideInOut 4s ease;
                 }
                 
-                .jumping-monkey {
-                    position: fixed;
-                    bottom: 0;
-                    z-index: 9998;
-                    font-size: 40px;
-                    user-select: none;
-                    pointer-events: none;
-                    filter: drop-shadow(2px 4px 6px rgba(0, 0, 0, 0.5));
+                @keyframes slideInOut {
+                    0% { right: -400px; }
+                    10% { right: 20px; }
+                    90% { right: 20px; }
+                    100% { right: -400px; }
                 }
                 
-                .rotating-monkey {
-                    display: inline-block;
-                    animation: rotateMonkey 2s infinite linear;
+                .achievement-icon {
+                    font-size: 2rem;
                 }
                 
-                .alert-overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background-color: rgba(255, 0, 0, 0.2);
-                    z-index: 9997;
-                    pointer-events: none;
-                    animation: blink 0.5s 3;
-                }
-                
-                .danger-text {
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    font-size: 80px;
-                    color: red;
-                    font-weight: bold;
-                    text-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
-                    z-index: 9998;
-                    pointer-events: none;
-                    animation: blink 0.3s 5;
-                }
-                
-                .terminal-cursor {
-                    display: inline-block;
-                    width: 10px;
-                    height: 18px;
-                    background-color: currentColor;
-                    animation: blink 1s infinite;
-                }
-                
-                .warning-banner {
-                    background-color: rgba(255, 153, 0, 0.8);
-                    color: black;
-                    text-align: center;
-                    padding: 10px;
-                    font-weight: bold;
-                    border-radius: 4px;
-                    margin-bottom: 15px;
-                    font-family: 'JetBrains Mono', 'Courier New', monospace;
+                .achievement-title {
+                    font-size: 0.75rem;
+                    color: var(--corp-text-muted);
                     text-transform: uppercase;
-                    border: 2px solid #ff6347;
+                    letter-spacing: 1px;
+                }
+                
+                .achievement-name {
+                    font-weight: 600;
+                    color: var(--corp-primary);
+                    margin: 0.25rem 0;
+                }
+                
+                .achievement-desc {
+                    font-size: 0.875rem;
+                    color: var(--corp-text-muted);
+                }
+                
+                .achievement-tracker {
+                    position: fixed;
+                    bottom: 20px;
+                    left: 20px;
+                    background: white;
+                    border: 1px solid var(--corp-border);
+                    border-radius: 8px;
+                    padding: 0.5rem 1rem;
+                    font-size: 0.875rem;
+                    color: var(--corp-text-muted);
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    z-index: 1000;
+                }
+                
+                .achievement-tracker:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
                 }
             `;
-            document.head.appendChild(monkeyStyles);
+            document.head.appendChild(styles);
         }
         
-        // Create warning banner
-        const warningBanner = document.createElement('div');
-        warningBanner.className = 'warning-banner';
-        warningBanner.innerHTML = '⚠️ CHAOS MODE ACTIVATED ⚠️';
-        elements.resultDiv.appendChild(warningBanner);
-        
-        // Create a container for the chaos monkey report
-        const chaosContainer = document.createElement('div');
-        chaosContainer.id = 'chaos-container';
-        chaosContainer.style.border = '2px dashed #ff6347';
-        chaosContainer.style.padding = '20px';
-        chaosContainer.style.marginTop = '15px';
-        chaosContainer.style.backgroundColor = 'rgba(255, 99, 71, 0.1)';
-        chaosContainer.style.position = 'relative';
-        chaosContainer.style.borderRadius = '8px';
-        chaosContainer.style.overflow = 'hidden';
-        
-        // Chaos monkey header
-        const header = document.createElement('h3');
-        header.innerHTML = '🐵 Chaos Monkey Report <span class="rotating-monkey">🐒</span>';
-        header.style.color = '#ff6347';
-        header.style.marginBottom = '15px';
-        
-        // Results container
-        const results = document.createElement('pre');
-        results.style.margin = '0';
-        results.style.fontSize = '14px';
-        results.style.backgroundColor = '#0D1117';
-        results.style.color = '#ff6347';
-        results.style.borderRadius = '8px';
-        results.style.fontFamily = "'JetBrains Mono', 'Courier New', monospace";
-        results.style.lineHeight = '1.5';
-        results.style.overflowX = 'auto';
-        results.style.whiteSpace = 'pre-wrap'; // Wrap text instead of overflowing
-        results.style.wordBreak = 'break-word'; // Break long words if needed
-        results.style.maxHeight = '400px'; // Limit height to enable scrolling
-        results.style.overflow = 'auto'; // Add scrollbars when needed
-        
-        // Add a container inside the pre to properly space the content
-        const monkeyContentContainer = document.createElement('div');
-        monkeyContentContainer.style.padding = '20px';
-        monkeyContentContainer.style.paddingTop = '45px'; // Extra padding at top to avoid overlap with header
-        results.appendChild(monkeyContentContainer);
-        
-        // Add everything to the container
-        chaosContainer.appendChild(header);
-        chaosContainer.appendChild(results);
-        
-        // Add container to the page
-        elements.resultDiv.appendChild(chaosContainer);
-        
-        // Create alert overlay (will be added later in the sequence)
-        const alertOverlay = document.createElement('div');
-        alertOverlay.className = 'alert-overlay';
-        
-        // Create danger text (will be added later in the sequence)
-        const dangerText = document.createElement('div');
-        dangerText.className = 'danger-text';
-        dangerText.textContent = 'CHAOS MODE';
-        
-        // Initiate the chaos sequence
-        initiateScreenShaking();
-        showToast("⚠️ WARNING: Chaos Monkey unleashed on your infrastructure!", "warning");
-        
-        // Display danger mode for 2 seconds
-        document.body.appendChild(alertOverlay);
-        document.body.appendChild(dangerText);
-        
-        setTimeout(() => {
-            alertOverlay.remove();
-            dangerText.remove();
-            
-            // Release the monkeys!
-            releaseMonkeys();
-            
-            // Start the chaos test after initial animations
-            runChaosTests();
-        }, 2000);
-        
-        // Function to initiate screen shaking
-        function initiateScreenShaking() {
-            // Apply shake animation to the whole page
-            document.body.style.animation = 'shake 0.5s linear infinite';
-            
-            // Stop shaking after 2 seconds
-            setTimeout(() => {
-                document.body.style.animation = '';
-                
-                // Add occasional random shakes during the test
-                const randomShakes = setInterval(() => {
-                    if (Math.random() > 0.7) {
-                        document.body.style.animation = 'shake 0.3s linear';
-                        setTimeout(() => {
-                            document.body.style.animation = '';
-                        }, 300);
-                    }
-                }, 4000);
-                
-                // Clear interval after chaos test is complete (20 seconds)
-                setTimeout(() => {
-                    clearInterval(randomShakes);
-                }, 20000);
-            }, 2000);
-        }
-        
-        // Function to release the flying monkeys
-        function releaseMonkeys() {
-            // Release even more monkeys if in vibe mode
-            const baseMonkeyCount = isVibeMode ? 15 : 10;
-            
-            // Release flying monkeys
-            for (let i = 0; i < baseMonkeyCount; i++) {
-                setTimeout(() => {
-                    const monkey = document.createElement('div');
-                    monkey.className = 'flying-monkey';
-                    monkey.innerHTML = '🐵';
-                    monkey.style.setProperty('--y', Math.random().toFixed(2));
-                    monkey.style.animation = `flyingMonkey ${2 + Math.random() * 4}s linear forwards`;
-                    document.body.appendChild(monkey);
-                    
-                    // Maybe spin the monkey in vibe mode
-                    if (isVibeMode && Math.random() > 0.6) {
-                        monkey.style.transform = "rotate(0deg)";
-                        monkey.style.animation = `flyingMonkey ${2 + Math.random() * 4}s linear forwards, rotateMonkey ${0.5 + Math.random()}s linear infinite`;
-                    }
-                    
-                    // Remove after animation completes
-                    setTimeout(() => {
-                        monkey.remove();
-                    }, 6000);
-                }, i * (isVibeMode ? 300 : 500)); // Faster in vibe mode
-            }
-            
-            // Create jumping monkeys from bottom of screen
-            const jumpingMonkeyCount = isVibeMode ? 8 : 5;
-            for (let i = 0; i < jumpingMonkeyCount; i++) {
-                setTimeout(() => {
-                    const monkey = document.createElement('div');
-                    monkey.className = 'jumping-monkey';
-                    monkey.innerHTML = '🙈';
-                    monkey.style.setProperty('--x', `${Math.random() * 90 + 5}vw`);
-                    monkey.style.setProperty('--jump-height', `${100 + Math.random() * 300}px`);
-                    monkey.style.animation = `jumpingMonkey ${1 + Math.random() * 2}s ease-in-out`;
-                    document.body.appendChild(monkey);
-                    
-                    // In vibe mode, monkey might also spin while jumping
-                    if (isVibeMode && Math.random() > 0.5) {
-                        monkey.style.animation = `jumpingMonkey ${1 + Math.random() * 2}s ease-in-out, rotateMonkey ${0.3 + Math.random() * 0.7}s linear infinite`;
-                    }
-                    
-                    // Remove after animation completes
-                    setTimeout(() => {
-                        monkey.remove();
-                    }, 3000);
-                }, 2000 + i * 1000);
-            }
-            
-            // Continue releasing random monkeys
-            const monkeyInterval = setInterval(() => {
-                // Higher chance in vibe mode
-                if (Math.random() > (isVibeMode ? 0.5 : 0.7)) {
-                    const monkey = document.createElement('div');
-                    monkey.className = 'flying-monkey';
-                    
-                    // More variety in vibe mode
-                    if (isVibeMode) {
-                        const monkeyTypes = ['🐒', '🙊', '🙈', '🐵', '🦍', '🦧'];
-                        monkey.innerHTML = monkeyTypes[Math.floor(Math.random() * monkeyTypes.length)];
-                    } else {
-                        monkey.innerHTML = Math.random() > 0.5 ? '🐒' : '🙊';
-                    }
-                    
-                    monkey.style.setProperty('--y', Math.random().toFixed(2));
-                    monkey.style.animation = `flyingMonkey ${2 + Math.random() * 3}s linear forwards`;
-                    
-                    // In vibe mode, buttons and inputs might temporarily get monkey-fied
-                    if (isVibeMode && Math.random() > 0.8) {
-                        const randomButton = document.querySelector('button, input, select');
-                        if (randomButton) {
-                            // Save original state
-                            const originalHTML = randomButton.innerHTML;
-                            const originalBg = randomButton.style.backgroundColor;
-                            
-                            // Apply monkey styling
-                            if (Math.random() > 0.5) {
-                                randomButton.innerHTML = monkey.innerHTML + ' ' + originalHTML;
-                            } else {
-                                randomButton.style.backgroundColor = 'yellow';
-                                randomButton.style.transform = 'rotate(' + (Math.random() * 360) + 'deg)';
-                            }
-                            
-                            // Restore after a short period
-                            setTimeout(() => {
-                                randomButton.innerHTML = originalHTML;
-                                randomButton.style.backgroundColor = originalBg;
-                                randomButton.style.transform = '';
-                            }, 1500);
-                        }
-                    }
-                    
-                    document.body.appendChild(monkey);
-                    
-                    // Maybe spin the monkey
-                    if (isVibeMode && Math.random() > 0.6) {
-                        monkey.style.animation = `flyingMonkey ${2 + Math.random() * 3}s linear forwards, rotateMonkey ${0.3 + Math.random() * 0.7}s linear infinite`;
-                    }
-                    
-                    setTimeout(() => {
-                        monkey.remove();
-                    }, 5000);
-                }
-            }, isVibeMode ? 1000 : 2000); // Twice as fast in vibe mode
-            
-            // Run for longer in vibe mode
-            setTimeout(() => {
-                clearInterval(monkeyInterval);
-            }, isVibeMode ? 25000 : 15000);
-        }
-        
-        // Run the actual chaos tests
-        function runChaosTests() {
-            const chaosTests = [
-                "🔥 Simulating spike of 10,000 hungry developers...",
-                "⏱️ Adding 500ms of artificial network latency to pizza delivery...",
-                "🔌 Randomly terminating 30% of pizza instances...",
-                "🚨 Testing pizza failover mechanisms...",
-                "🔨 Breaking dependencies between sauce and cheese services...",
-                "📊 Evaluating load balancing between multiple pizzerias...",
-                "🍍 Injecting pineapple into random pizza slices...",
-                "⚡ Stress testing pizza delivery under high voltage...",
-                "🔒 Testing authentication between customer and delivery systems...",
-                "💥 Triggering cascading topping failure scenario..."
-            ];
-            
-            let index = 0;
-            const typeText = (text, callback) => {
-                let i = 0;
-                const typing = setInterval(() => {
-                    if (i < text.length) {
-                        monkeyContentContainer.textContent += text.charAt(i);
-                        // Scroll to bottom of results as text is typed
-                        results.scrollTop = results.scrollHeight;
-                        
-                        // Scroll the page to keep the chaos container in view
-                        if (i % 20 === 0) { // Only scroll occasionally to avoid jitters
-                            chaosContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                        }
-                        
-                        i++;
-                    } else {
-                        clearInterval(typing);
-                        monkeyContentContainer.textContent += '\n';
-                        // Add blinking cursor temporarily
-                        const cursor = document.createElement('span');
-                        cursor.className = 'terminal-cursor';
-                        monkeyContentContainer.appendChild(cursor);
-                        
-                        // Ensure container is in view
-                        chaosContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                        
-                        // Remove cursor after delay
-                        setTimeout(() => {
-                            if (monkeyContentContainer.contains(cursor)) {
-                                monkeyContentContainer.removeChild(cursor);
-                            }
-                            if (callback) callback();
-                        }, 300);
-                    }
-                }, 20);
-            };
-            
-            function processNextTest() {
-                if (index < chaosTests.length) {
-                    // Shake the screen occasionally during tests
-                    if (Math.random() > 0.6) {
-                        document.body.style.animation = 'shake 0.3s ease-in-out';
-                        setTimeout(() => {
-                            document.body.style.animation = '';
-                        }, 300);
-                    }
-                    
-                    typeText(chaosTests[index], () => {
-                        // Add random recovery or failure messages
-                        setTimeout(() => {
-                            // 70% chance of success, 30% chance of failure
-                            if (Math.random() > 0.3) {
-                                typeText(`  ✅ Recovery successful! Pizza resilience confirmed.`, () => {
-                                    index++;
-                                    setTimeout(processNextTest, 400);
-                                });
-                            } else {
-                                // Show failure message with red text
-                                const failureMsg = `  ❌ FAILURE DETECTED! Initiating pizza recovery procedures...`;
-                                typeText(failureMsg, () => {
-                                    // Shake screen on failure
-                                    document.body.style.animation = 'shake 0.4s ease-in-out';
-                                    setTimeout(() => {
-                                        document.body.style.animation = '';
-                                        typeText(`  ✅ Recovery complete after failure.`, () => {
-                                            index++;
-                                            setTimeout(processNextTest, 400);
-                                        });
-                                    }, 400);
-                                });
-                            }
-                        }, 300);
-                    });
-                } else {
-                    setTimeout(() => {
-                        monkeyContentContainer.textContent += "\n";
-                        
-                        // Calculate uptime between 60% and 99%
-                        const uptime = Math.floor(Math.random() * 40 + 60);
-                        
-                        // Final report with dramatic pause
-                        typeText(`🐵 Chaos Monkey Summary:\n`, () => {
-                            setTimeout(() => {
-                                // Apply shaking for dramatic effect
-                                document.body.style.animation = 'shake 0.3s ease-in-out';
-                                setTimeout(() => {
-                                    document.body.style.animation = '';
-                                }, 300);
-                                
-                                typeText(`Your pizza system survived with ${uptime}% uptime!`, () => {
-                                    // Add random funny errors
-                                    if (Math.random() > 0.5) {
-                                        setTimeout(() => {
-                                            typeText("\n⚠️ Unexpected Hawaiian pizza in production environment detected.", () => {
-                                                setTimeout(() => {
-                                                    // Add metrics and finalize
-                                                    addMetricsToReport(chaosContainer, uptime);
-                                                    
-                                                    // In vibe mode, we might do one final crazy effect
-                                                    if (isVibeMode && Math.random() > 0.7) {
-                                                        // Randomly transform elements on the page
-                                                        const elements = document.querySelectorAll('button, input, select, h3, p');
-                                                        elements.forEach(el => {
-                                                            if (Math.random() > 0.7) {
-                                                                el.style.transition = 'all 0.5s ease';
-                                                                
-                                                                // Apply a random effect
-                                                                const effect = Math.floor(Math.random() * 5);
-                                                                switch(effect) {
-                                                                    case 0: // Spin
-                                                                        el.style.transform = `rotate(${Math.random() * 360}deg)`;
-                                                                        break;
-                                                                    case 1: // Grow
-                                                                        el.style.transform = `scale(${1 + Math.random()})`;
-                                                                        break;
-                                                                    case 2: // Skew
-                                                                        el.style.transform = `skew(${Math.random() * 20}deg, ${Math.random() * 20}deg)`;
-                                                                        break;
-                                                                    case 3: // Change color
-                                                                        el.style.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
-                                                                        break;
-                                                                    case 4: // Move
-                                                                        el.style.transform = `translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px)`;
-                                                                        break;
-                                                                }
-                                                                
-                                                                // Reset after a delay
-                                                                setTimeout(() => {
-                                                                    el.style.transform = '';
-                                                                    el.style.color = '';
-                                                                }, 2000);
-                                                            }
-                                                        });
-                                                    }
-                                                    
-                                                    // Send a relieved toast message
-                                                    showToast("Chaos Monkey test complete! Your system survived!", "success");
-                                                    
-                                                    // Stop any remaining animations
-                                                    document.querySelectorAll('.flying-monkey, .jumping-monkey').forEach(el => el.remove());
-                                                }, 800);
-                                            });
-                                        }, 600);
-                                    } else {
-                                        setTimeout(() => {
-                                            // Add metrics and finalize
-                                            addMetricsToReport(chaosContainer, uptime);
-                                            
-                                            // In vibe mode, we might do one final crazy effect
-                                            if (isVibeMode && Math.random() > 0.7) {
-                                                // Randomly transform elements on the page
-                                                const elements = document.querySelectorAll('button, input, select, h3, p');
-                                                elements.forEach(el => {
-                                                    if (Math.random() > 0.7) {
-                                                        el.style.transition = 'all 0.5s ease';
-                                                        
-                                                        // Apply a random effect
-                                                        const effect = Math.floor(Math.random() * 5);
-                                                        switch(effect) {
-                                                            case 0: // Spin
-                                                                el.style.transform = `rotate(${Math.random() * 360}deg)`;
-                                                                break;
-                                                            case 1: // Grow
-                                                                el.style.transform = `scale(${1 + Math.random()})`;
-                                                                break;
-                                                            case 2: // Skew
-                                                                el.style.transform = `skew(${Math.random() * 20}deg, ${Math.random() * 20}deg)`;
-                                                                break;
-                                                            case 3: // Change color
-                                                                el.style.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
-                                                                break;
-                                                            case 4: // Move
-                                                                el.style.transform = `translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px)`;
-                                                                break;
-                                                        }
-                                                        
-                                                        // Reset after a delay
-                                                        setTimeout(() => {
-                                                            el.style.transform = '';
-                                                            el.style.color = '';
-                                                        }, 2000);
-                                                    }
-                                                });
-                                            }
-                                            
-                                            // Send a relieved toast message
-                                            showToast("Chaos Monkey test complete! Your system survived!", "success");
-                                            
-                                            // Stop any remaining animations
-                                            document.querySelectorAll('.flying-monkey, .jumping-monkey').forEach(el => el.remove());
-                                        }, 800);
-                                    }
-                                });
-                            }, 500);
-                        });
-                    }, 500);
-                }
-            }
-            
-            // Start processing tests after a brief delay
-            setTimeout(() => {
-                processNextTest();
-            }, 1000);
-        }
-        
-        function addMetricsToReport(container, uptime) {
-            // Add details section with key metrics
-            const metricsSection = document.createElement('div');
-            metricsSection.style.marginTop = '15px';
-            metricsSection.style.display = 'flex';
-            metricsSection.style.flexWrap = 'wrap';
-            metricsSection.style.gap = '10px';
-            
-            // Add animated metric boxes
-            const createMetricBox = (icon, label, value, color) => {
-                const box = document.createElement('div');
-                box.style.flex = '1 0 calc(50% - 10px)';
-                box.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
-                box.style.padding = '10px';
-                box.style.borderRadius = '4px';
-                box.style.display = 'flex';
-                box.style.alignItems = 'center';
-                box.style.gap = '10px';
-                box.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
-                box.style.transition = 'transform 0.3s ease, box-shadow 0.3s ease';
-                
-                // Add hover effect
-                box.onmouseover = () => {
-                    box.style.transform = 'translateY(-5px)';
-                    box.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.2)';
-                };
-                box.onmouseout = () => {
-                    box.style.transform = '';
-                    box.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
-                };
-                
-                const iconEl = document.createElement('i');
-                iconEl.className = icon;
-                iconEl.style.fontSize = '24px';
-                iconEl.style.color = color;
-                
-                const content = document.createElement('div');
-                content.innerHTML = `<div style="font-size: 12px; opacity: 0.7;">${label}</div>
-                                    <div style="font-weight: bold;">${value}</div>`;
-                
-                box.appendChild(iconEl);
-                box.appendChild(content);
-                
-                // Animate box entrance
-                box.style.opacity = '0';
-                box.style.transform = 'translateY(20px)';
-                
-                return box;
-            };
-            
-            // Create metrics with slightly staggered animations
-            const metrics = [
-                createMetricBox('fas fa-server', 'System Uptime', `${uptime}%`, '#ff6347'),
-                createMetricBox('fas fa-fire-extinguisher', 'Recovery Success', `${Math.floor(Math.random() * 20) + 80}%`, '#FFD700'),
-                createMetricBox('fas fa-tachometer-alt', 'Response Time', `${Math.floor(Math.random() * 200) + 100}ms`, '#1E90FF'),
-                createMetricBox('fas fa-shield-alt', 'Resilience Score', `${Math.floor(Math.random() * 30) + 70}/100`, '#4CAF50')
-            ];
-            
-            // Add metrics to section
-            metrics.forEach(metric => {
-                metricsSection.appendChild(metric);
-            });
-            
-            // Add section to container
-            container.appendChild(metricsSection);
-            
-            // Animate metrics in with staggered delay
-            metrics.forEach((metric, index) => {
-                setTimeout(() => {
-                    metric.style.opacity = '1';
-                    metric.style.transform = '';
-                }, 100 * (index + 1));
-            });
-        }
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 4000);
     }
-    // Fake Delete Production sequence for vibe mode
-    window.fakeDeleteProduction = function() {
-        // Create a terminal-style overlay
-        const terminalOverlay = document.createElement('div');
-        terminalOverlay.style.position = 'fixed';
-        terminalOverlay.style.top = '0';
-        terminalOverlay.style.left = '0';
-        terminalOverlay.style.right = '0';
-        terminalOverlay.style.bottom = '0';
-        terminalOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
-        terminalOverlay.style.color = '#00FF00';
-        terminalOverlay.style.fontFamily = "'Fira Code', monospace";
-        terminalOverlay.style.padding = '20px';
-        terminalOverlay.style.zIndex = '10000';
-        terminalOverlay.style.overflow = 'auto';
-        terminalOverlay.style.paddingTop = '50px';
+    
+    // Update achievement display
+    function updateAchievementDisplay() {
+        let tracker = document.getElementById('achievementTracker');
+        if (!tracker) {
+            tracker = document.createElement('div');
+            tracker.id = 'achievementTracker';
+            tracker.className = 'achievement-tracker';
+            tracker.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${madnessLevel >= 8 ? 'linear-gradient(135deg, #ff0000, #ffff00)' : 'linear-gradient(135deg, #004080, #0066cc)'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 25px;
+                cursor: pointer;
+                z-index: 1000;
+                font-weight: bold;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                transition: all 0.3s ease;
+                user-select: none;
+                ${madnessLevel >= 5 ? 'animation: gentle-breathe 3s ease-in-out infinite;' : ''}
+            `;
+            
+            // Add hover effect
+            tracker.onmouseenter = function() {
+                this.style.transform = 'scale(1.1)';
+                this.style.boxShadow = '0 6px 12px rgba(0,0,0,0.3)';
+            };
+            tracker.onmouseleave = function() {
+                this.style.transform = 'scale(1)';
+                this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+            };
+            
+            document.body.appendChild(tracker);
+        }
         
-        document.body.appendChild(terminalOverlay);
+        const total = Object.keys(achievements).length;
+        const unlocked = Object.values(achievements).filter(a => a.unlocked).length;
+        const percentage = Math.round((unlocked / total) * 100);
         
-        // Add a close button
+        // Update content with progress
+        tracker.innerHTML = `
+            <span style="font-size: 1.2em;">🏆</span> 
+            Achievements: ${unlocked}/${total} 
+            <span style="font-size: 0.9em; opacity: 0.9;">(${percentage}%)</span>
+        `;
+        
+        // Update styling based on progress
+        if (percentage === 100) {
+            tracker.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
+            tracker.style.animation = 'pulse 1s ease-in-out infinite, rainbow 5s linear infinite';
+        } else if (madnessLevel >= 8) {
+            tracker.style.background = 'linear-gradient(135deg, #ff0000, #ffff00)';
+        }
+        
+        // Add click handler to show all achievements
+        tracker.onclick = function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            showAllAchievements();
+        };
+        
+        // Add tooltip
+        tracker.title = 'Click to view all achievements';
+    }
+    
+    // Show all achievements modal
+    function showAllAchievements() {
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100000;
+            animation: fadeIn 0.3s ease;
+            backdrop-filter: blur(2px);
+        `;
+        
+        // Click outside to close
+        modal.onclick = function(e) {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        };
+        
+        // Create modal content
+        const content = document.createElement('div');
+        content.style.cssText = `
+            background: ${madnessLevel >= 8 ? 'linear-gradient(45deg, #1a1a1a, #2a2a2a)' : 'white'};
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 90%;
+            width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            ${madnessLevel >= 5 ? 'animation: gentle-wobble 4s ease-in-out infinite;' : ''}
+        `;
+        
+        // Header
+        const header = document.createElement('div');
+        header.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid ${madnessLevel >= 8 ? '#ff0000' : '#004080'};
+        `;
+        
+        const title = document.createElement('h2');
+        title.textContent = madnessLevel >= 9 ? '🍕 PIZZA ACHIEVEMENTS 🍕' : 'Corporate Achievement Dashboard';
+        title.style.cssText = `
+            color: ${madnessLevel >= 8 ? '#ffff00' : '#004080'};
+            margin: 0;
+            font-size: 1.8rem;
+            ${madnessLevel >= 7 ? 'text-shadow: 2px 2px 4px rgba(255, 0, 0, 0.5);' : ''}
+        `;
+        
         const closeBtn = document.createElement('button');
-        closeBtn.textContent = '✖';
-        closeBtn.style.position = 'absolute';
-        closeBtn.style.top = '10px';
-        closeBtn.style.right = '10px';
-        closeBtn.style.background = 'none';
-        closeBtn.style.border = 'none';
-        closeBtn.style.color = '#FF5722';
-        closeBtn.style.fontSize = '24px';
-        closeBtn.style.cursor = 'pointer';
-        closeBtn.style.zIndex = '10001';
+        closeBtn.textContent = madnessLevel >= 9 ? '🍕' : '✕';
+        closeBtn.style.cssText = `
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: ${madnessLevel >= 8 ? '#ff0000' : '#666'};
+            padding: 0.5rem;
+        `;
+        closeBtn.onclick = () => modal.remove();
         
-        closeBtn.addEventListener('click', () => {
-            terminalOverlay.remove();
+        header.appendChild(title);
+        header.appendChild(closeBtn);
+        content.appendChild(header);
+        
+        // Stats
+        const stats = document.createElement('div');
+        const achievementArray = Object.values(achievements);
+        const unlockedCount = achievementArray.filter(a => a.unlocked).length;
+        const totalCount = achievementArray.length;
+        const percentage = Math.round((unlockedCount / totalCount) * 100);
+        
+        stats.innerHTML = `
+            <div style="background: ${madnessLevel >= 8 ? '#2a2a2a' : '#f5f5f5'}; 
+                        padding: 1rem; 
+                        border-radius: 8px; 
+                        margin-bottom: 1.5rem;
+                        ${madnessLevel >= 6 ? 'border: 2px dashed #ff0000;' : ''}">
+                <p style="margin: 0; color: ${madnessLevel >= 8 ? '#00ff00' : '#333'};">
+                    <strong>${madnessLevel >= 9 ? 'PIZZA DOMINATION:' : 'Progress:'}</strong> 
+                    ${unlockedCount} / ${totalCount} (${percentage}%)
+                </p>
+                <div style="background: #ddd; height: 20px; border-radius: 10px; margin-top: 0.5rem; overflow: hidden;">
+                    <div style="background: ${madnessLevel >= 8 ? 'linear-gradient(90deg, #ff0000, #ffff00, #00ff00)' : 'linear-gradient(90deg, #004080, #0066cc)'}; 
+                                width: ${percentage}%; 
+                                height: 100%; 
+                                transition: width 0.3s ease;
+                                ${madnessLevel >= 7 ? 'animation: pulse 1s infinite;' : ''}"></div>
+                </div>
+            </div>
+        `;
+        content.appendChild(stats);
+        
+        // Achievement grid
+        const grid = document.createElement('div');
+        grid.style.cssText = `
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        `;
+        
+        achievementArray.forEach(achievement => {
+            const card = document.createElement('div');
+            const isUnlocked = achievement.unlocked;
+            
+            card.style.cssText = `
+                background: ${isUnlocked 
+                    ? (madnessLevel >= 8 ? '#1a3a1a' : '#e8f5e9')
+                    : (madnessLevel >= 8 ? '#3a1a1a' : '#f5f5f5')};
+                border: 2px solid ${isUnlocked 
+                    ? (madnessLevel >= 8 ? '#00ff00' : '#4caf50')
+                    : (madnessLevel >= 8 ? '#666' : '#ddd')};
+                border-radius: 8px;
+                padding: 1rem;
+                position: relative;
+                transition: transform 0.2s ease;
+                cursor: pointer;
+                ${!isUnlocked ? 'opacity: 0.7;' : ''}
+                ${madnessLevel >= 6 && isUnlocked ? 'animation: gentle-breathe 3s ease-in-out infinite;' : ''}
+            `;
+            
+            card.onmouseenter = () => {
+                card.style.transform = 'scale(1.05)';
+                if (madnessLevel >= 7 && isUnlocked) {
+                    card.style.transform = 'scale(1.05) rotate(' + (Math.random() * 6 - 3) + 'deg)';
+                }
+            };
+            card.onmouseleave = () => {
+                card.style.transform = 'scale(1)';
+            };
+            
+            // Icon
+            const icon = document.createElement('div');
+            icon.textContent = isUnlocked ? achievement.icon : '🔒';
+            icon.style.cssText = `
+                font-size: 2rem;
+                margin-bottom: 0.5rem;
+                ${isUnlocked && madnessLevel >= 7 ? 'animation: spin 3s linear infinite;' : ''}
+            `;
+            
+            // Title
+            const titleEl = document.createElement('h4');
+            titleEl.textContent = achievement.name;
+            titleEl.style.cssText = `
+                margin: 0.5rem 0;
+                color: ${madnessLevel >= 8 
+                    ? (isUnlocked ? '#ffff00' : '#999')
+                    : (isUnlocked ? '#2e7d32' : '#666')};
+                font-size: 1rem;
+            `;
+            
+            // Description
+            const desc = document.createElement('p');
+            desc.textContent = isUnlocked ? achievement.description : '???';
+            desc.style.cssText = `
+                margin: 0;
+                font-size: 0.85rem;
+                color: ${madnessLevel >= 8 ? '#ccc' : '#666'};
+                ${!isUnlocked ? 'font-style: italic;' : ''}
+            `;
+            
+            // Unlock date
+            if (isUnlocked && achievement.unlockedAt) {
+                const date = document.createElement('div');
+                const unlockedDate = new Date(achievement.unlockedAt);
+                date.textContent = madnessLevel >= 9 
+                    ? '🍕 ' + unlockedDate.toLocaleString()
+                    : 'Achieved: ' + unlockedDate.toLocaleDateString();
+                date.style.cssText = `
+                    margin-top: 0.5rem;
+                    font-size: 0.7rem;
+                    color: ${madnessLevel >= 8 ? '#888' : '#999'};
+                `;
+                card.appendChild(date);
+            }
+            
+            card.appendChild(icon);
+            card.appendChild(titleEl);
+            card.appendChild(desc);
+            
+            grid.appendChild(card);
         });
         
-        terminalOverlay.appendChild(closeBtn);
+        content.appendChild(grid);
         
-        // Add terminal content area
-        const terminalContent = document.createElement('div');
-        terminalOverlay.appendChild(terminalContent);
+        // Footer with secret message
+        if (percentage === 100) {
+            const footer = document.createElement('div');
+            footer.style.cssText = `
+                margin-top: 2rem;
+                padding-top: 1rem;
+                border-top: 2px solid ${madnessLevel >= 8 ? '#ff0000' : '#004080'};
+                text-align: center;
+            `;
+            footer.innerHTML = `
+                <p style="color: ${madnessLevel >= 8 ? '#ffff00' : '#004080'}; 
+                          font-weight: bold;
+                          ${madnessLevel >= 9 ? 'animation: rainbow 2s linear infinite;' : ''}">
+                    ${madnessLevel >= 9 
+                        ? '🍕 YOU ARE THE PIZZA MASTER! THE PROPHECY IS COMPLETE! 🍕'
+                        : '🎉 Congratulations! You\'ve achieved maximum corporate synergy!'}
+                </p>
+            `;
+            content.appendChild(footer);
+        }
         
-        // Destructive commands to pretend to run
-        const commands = [
-            { text: "ssh admin@production.pizza-server.com", delay: 800 },
-            { text: "Password: ********", delay: 1200 },
-            { text: "Last login: Thu Apr 11 09:32:16 2025 from 192.168.1.42", delay: 800 },
-            { text: "admin@prod-server:~$ sudo -i", delay: 1000 },
-            { text: "Password: ********", delay: 800 },
-            { text: "root@prod-server:~# cd /var/lib/postgresql/data", delay: 1200 },
-            { text: "root@prod-server:/var/lib/postgresql/data# ls", delay: 800 },
-            { text: "base        pg_commit_ts  pg_logical    pg_serial     pg_twophase  PG_VERSION postgresql.conf\ndbconfig.yml  pg_clog       pg_multixact  pg_snapshots  pg_xlog      postmaster.opts\nglobal       pg_dynshmem   pg_notify     pg_stat_tmp   PG_VERSION   postmaster.pid", delay: 1000 },
-            { text: "root@prod-server:/var/lib/postgresql/data# rm -rf *", delay: 1500, warning: true },
-            { text: "Are you sure you want to delete ALL production data? This cannot be undone! [y/N]: y", delay: 2000, warning: true },
-            { text: "Deleting production database...", delay: 3000, warning: true },
-            { text: "Pizza orders deleted: 3,291", delay: 800 },
-            { text: "Customer records deleted: 18,734", delay: 800 },
-            { text: "Pizza recipes deleted: 42", delay: 800 },
-            { text: "ERROR: Catastrophic system failure detected!", delay: 1500, error: true },
-            { text: "Attempting to restore from backup...", delay: 2000 },
-            { text: "No backups found. Creating empty database.", delay: 1500, error: true },
-            { text: "root@prod-server:/var/lib/postgresql/data# echo 'oops' > PG_VERSION", delay: 1000 },
-            { text: "root@prod-server:/var/lib/postgresql/data# logout", delay: 800 },
-            { text: "admin@prod-server:~$ logout", delay: 800 },
-            { text: "Connection to production.pizza-server.com closed.", delay: 1200 },
-            { text: "... just kidding! This was a vibe mode simulation. No pizzas were harmed in the making of this chaos.", delay: 0, success: true }
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+        
+        // Add fade-in animation
+        modal.style.animation = 'fadeIn 0.3s ease';
+    }
+    
+    // Maxis-style loading messages that gradually get weird
+    const loadingMessages = [
+        // Level 0: Completely professional
+        [
+            "Initializing resource allocation system...",
+            "Loading team appetite profiles...",
+            "Analyzing meeting duration parameters...",
+            "Calculating optimal distribution...",
+            "Generating procurement recommendations..."
+        ],
+        
+        // Level 1-2: Professional with slight personality
+        [
+            "Reticulating splines...",
+            "Adjusting for local pizza availability...",
+            "Factoring in dietary preferences...",
+            "Optimizing delivery logistics...",
+            "Applying standard deviation to hunger metrics..."
+        ],
+        
+        // Level 3-4: SimCity style quirky
+        [
+            "Consulting the pizza advisory board...",
+            "Downloading latest cheese firmware...",
+            "Establishing secure connection to Pizza Hub...",
+            "Running Monte Carlo simulations on toppings...",
+            "Deploying hunger assessment drones..."
+        ],
+        
+        // Level 5-6: IT humor creeping in
+        [
+            "Migrating appetite data to cloud...",
+            "Executing stored procedure: sp_GetPizza...",
+            "Cache miss! Recalculating from scratch...",
+            "Applying machine learning to crust preferences...",
+            "Docker container 'pizza-calc' starting..."
+        ],
+        
+        // Level 7-8: Full IT madness
+        [
+            "sudo apt-get install more-cheese...",
+            "Git merge conflict in toppings branch...",
+            "Stack overflow in hunger calculation...",
+            "Kubernetes pods scaling to handle appetite...",
+            "npm WARN: 47,293 pizza vulnerabilities found..."
+        ],
+        
+        // Level 9-10: Complete chaos
+        [
+            "SEGFAULT: Core dumped (extra cheese)...",
+            "Pizza daemon summoned successfully...",
+            "Reality.exe has stopped responding...",
+            "ALL YOUR PIZZA ARE BELONG TO US",
+            "🍕 ACHIEVING PIZZA SINGULARITY 🍕"
+        ]
+    ];
+    
+    // Track page interactions
+    let mouseMovements = 0;
+    let clickCount = 0;
+    let keyPresses = 0;
+    
+    document.addEventListener('mousemove', () => {
+        mouseMovements++;
+        checkMadnessProgression();
+    });
+    
+    document.addEventListener('click', () => {
+        clickCount++;
+        checkMadnessProgression();
+    });
+    
+    document.addEventListener('keypress', () => {
+        keyPresses++;
+        checkMadnessProgression();
+    });
+    
+    // Check and progress madness level
+    function checkMadnessProgression() {
+        const timeSpent = (Date.now() - startTime) / 1000; // seconds
+        const interactionScore = (mouseMovements / 100) + (clickCount * 2) + (keyPresses * 1.5);
+        const timeScore = timeSpent / 30; // Every 30 seconds adds to madness
+        
+        const newMadnessLevel = Math.min(10, Math.floor(
+            (calculationCount * 2) + (timeScore * 0.5) + (interactionScore * 0.1)
+        ));
+        
+        if (newMadnessLevel > madnessLevel) {
+            madnessLevel = newMadnessLevel;
+            applyMadnessEffects();
+        }
+    }
+    
+    // Apply visual and behavioral changes based on madness
+    function applyMadnessEffects() {
+        const body = document.body;
+        
+        // Remove all previous madness classes
+        for (let i = 0; i <= 10; i++) {
+            body.classList.remove(`madness-${i}`);
+        }
+        
+        // Apply current madness class
+        if (madnessLevel > 0) {
+            body.classList.add(`madness-${madnessLevel}`);
+        }
+        
+        // Update madness indicator
+        const indicator = document.getElementById('madnessIndicator');
+        const madnessText = document.getElementById('madnessText');
+        
+        const statusMessages = [
+            "System Status: Normal",
+            "System Status: Optimal",
+            "System Status: Elevated",
+            "System Status: Warming Up",
+            "System Status: Interesting...",
+            "System Status: Spicy 🌶️",
+            "System Status: ELEVATED",
+            "System Status: CRITICAL",
+            "SYSTEM STATUS: MAXIMUM",
+            "SY5T3M ST4TU5: CH405",
+            "🍕🍕🍕 PIZZA MODE 🍕🍕🍕"
         ];
         
-        // Function to append text with typewriter effect
-        function appendText(text, isWarning = false, isError = false, isSuccess = false) {
-            const line = document.createElement('div');
-            line.style.marginBottom = '8px';
-            line.style.lineHeight = '1.4';
-            line.style.whiteSpace = 'pre-wrap';
+        madnessText.textContent = statusMessages[madnessLevel];
+        
+        if (madnessLevel >= 3) {
+            indicator.classList.add('visible');
+        }
+        
+        // Apply progressive UI changes
+        applyProgressiveChanges();
+    }
+    
+    function applyProgressiveChanges() {
+        // Level 1-2: Subtle changes
+        if (madnessLevel >= 1) {
+            document.querySelector('.brand-name').textContent = 'PizzaCalc Pro™';
+        }
+        
+        if (madnessLevel >= 2) {
+            document.querySelector('.version-badge').textContent = 'Enterprise v2.0.1 (Stable)';
+        }
+        
+        // Level 3-4: Text starts changing
+        if (madnessLevel >= 3) {
+            document.querySelector('.card-subtitle').textContent = 
+                'Optimize pizza ordering for technical team meetings and intense debugging sessions';
+            document.querySelector('.brand-name').textContent = 'PizzaCalc Pro™ 🍕';
+        }
+        
+        if (madnessLevel >= 4) {
+            document.querySelector('.version-badge').textContent = 'v2.0.1 (Mostly Stable)';
+            document.querySelectorAll('.form-helper')[0].textContent = 'How many hungry developers?';
+        }
+        
+        // Level 5-6: More obvious changes
+        if (madnessLevel >= 5) {
+            document.querySelector('.card-title').textContent = 'Pizza Resource Allocation Calculator';
+            document.querySelector('.logo').textContent = '🍕';
+            addRandomEmojis();
+        }
+        
+        if (madnessLevel >= 6) {
+            document.querySelector('.version-badge').textContent = 'v2.?.? (Stability Optional)';
+            document.querySelector('.card-subtitle').textContent = 
+                'Because debugging requires cheese-based fuel ⚡';
+            makeButtonsNervous();
+        }
+        
+        // Level 7-8: Things get weird
+        if (madnessLevel >= 7) {
+            document.querySelector('.brand-name').innerHTML = 'Pizza<span style="color: red;">Calc</span> Pro™ 🍕🔥';
+            document.querySelector('.card-title').textContent = '🍕 PIZZA CALCULATION MATRIX 🍕';
+            addGlitchText();
+        }
+        
+        if (madnessLevel >= 8) {
+            document.querySelector('.version-badge').textContent = 'v?.?.? (CHAOS MODE)';
+            document.body.style.fontFamily = '"Comic Sans MS", cursive';
+            startRandomToasts();
+        }
+        
+        // Level 9-10: Complete chaos
+        if (madnessLevel >= 9) {
+            document.querySelector('.brand-name').innerHTML = '🍕 PIZZA 🍕 CALC 🍕 PRO 🍕';
+            unleashFullChaos();
+        }
+        
+        if (madnessLevel >= 10) {
+            document.title = '🍕🍕🍕 PIZZA TIME 🍕🍕🍕';
+            pizzaApocalypse();
+        }
+    }
+    
+    // Add random emojis to inputs
+    function addRandomEmojis() {
+        const emojis = ['🍕', '🧀', '🍅', '🌶️', '🥓', '🍄'];
+        document.querySelectorAll('.form-helper').forEach(helper => {
+            if (Math.random() > 0.7) {
+                helper.textContent += ' ' + emojis[Math.floor(Math.random() * emojis.length)];
+            }
+        });
+    }
+    
+    // Make buttons nervous (shake on hover)
+    function makeButtonsNervous() {
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('mouseenter', function() {
+                if (Math.random() > 0.5) {
+                    this.style.transform = `translateX(${Math.random() * 10 - 5}px)`;
+                    setTimeout(() => {
+                        this.style.transform = '';
+                    }, 200);
+                }
+            });
+        });
+    }
+    
+    // Add glitch effect to text
+    function addGlitchText() {
+        const glitchTargets = document.querySelectorAll('.card-title, .form-label');
+        glitchTargets.forEach(target => {
+            if (Math.random() > 0.8) {
+                const originalText = target.textContent;
+                const glitched = originalText.split('').map(char => 
+                    Math.random() > 0.9 ? String.fromCharCode(Math.random() * 100 + 33) : char
+                ).join('');
+                target.textContent = glitched;
+                setTimeout(() => {
+                    target.textContent = originalText;
+                }, 100);
+            }
+        });
+        
+        if (madnessLevel >= 7) {
+            setTimeout(addGlitchText, 3000);
+        }
+    }
+    
+    // Random toast messages
+    function startRandomToasts() {
+        const messages = [
+            "Pizza is the answer",
+            "Have you tried turning it off and on again?",
+            "Undefined is not a topping",
+            "404: Vegetables not found",
+            "Segmentation fault (core dumped)",
+            "Pizza overflow detected",
+            "Warning: Low cheese levels",
+            "Critical: Pineapple detected"
+        ];
+        
+        if (Math.random() > 0.8 && madnessLevel >= 8) {
+            showToast(messages[Math.floor(Math.random() * messages.length)]);
+            setTimeout(startRandomToasts, 5000);
+        }
+    }
+    
+    // Full chaos mode
+    function unleashFullChaos() {
+        // Random button text changes
+        document.querySelectorAll('.btn').forEach(btn => {
+            if (Math.random() > 0.5) {
+                const chaosText = ['CALCULATE!!!', 'FEED ME', 'MOAR PIZZA', 'DO IT', 'PIZZA TIME', 'CLICK ME'];
+                btn.querySelector('span').textContent = chaosText[Math.floor(Math.random() * chaosText.length)];
+            }
+        });
+        
+        // Add pizza rain occasionally
+        if (Math.random() > 0.7) {
+            for (let i = 0; i < 5; i++) {
+                createFallingPizza();
+            }
+        }
+    }
+    
+    // The pizza apocalypse
+    function pizzaApocalypse() {
+        document.body.style.animation = 'total-chaos 0.5s infinite';
+        
+        // Everything becomes pizza
+        document.querySelectorAll('input[type="number"], select').forEach(input => {
+            if (Math.random() > 0.5) {
+                input.value = '🍕';
+            }
+        });
+        
+        // Pizza invasion
+        setInterval(() => {
+            if (Math.random() > 0.8) {
+                const pizza = document.createElement('div');
+                pizza.textContent = '🍕';
+                pizza.style.position = 'fixed';
+                pizza.style.fontSize = Math.random() * 50 + 20 + 'px';
+                pizza.style.left = Math.random() * window.innerWidth + 'px';
+                pizza.style.top = Math.random() * window.innerHeight + 'px';
+                pizza.style.zIndex = '9999';
+                pizza.style.pointerEvents = 'none';
+                pizza.style.animation = 'spin 2s linear infinite';
+                document.body.appendChild(pizza);
+                setTimeout(() => pizza.remove(), 3000);
+            }
+        }, 500);
+    }
+    
+    // Create falling pizza animation
+    function createFallingPizza() {
+        const pizza = document.createElement('div');
+        pizza.textContent = '🍕';
+        pizza.style.position = 'fixed';
+        pizza.style.fontSize = '30px';
+        pizza.style.left = Math.random() * window.innerWidth + 'px';
+        pizza.style.top = '-50px';
+        pizza.style.zIndex = '9998';
+        pizza.style.pointerEvents = 'none';
+        pizza.style.transition = 'top 3s linear';
+        document.body.appendChild(pizza);
+        
+        setTimeout(() => {
+            pizza.style.top = window.innerHeight + 'px';
+        }, 10);
+        
+        setTimeout(() => pizza.remove(), 3000);
+    }
+    
+    // Toast notification system
+    function showToast(message) {
+        const toast = document.createElement('div');
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.background = madnessLevel >= 7 ? 'linear-gradient(45deg, #ff0000, #ffff00)' : '#333';
+        toast.style.color = 'white';
+        toast.style.padding = '1rem 2rem';
+        toast.style.borderRadius = '8px';
+        toast.style.zIndex = '10000';
+        toast.style.animation = 'slideIn 0.3s ease';
+        toast.textContent = message;
+        
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+    
+    // Main calculation function with accurate math
+    window.calculatePizza = function() {
+        calculationCount++;
+        checkMadnessProgression();
+        
+        const teamSize = parseInt(document.getElementById('teamSize').value);
+        const duration = parseInt(document.getElementById('duration').value);
+        const hunger = parseFloat(document.getElementById('hunger').value);
+        const pizzaType = document.getElementById('pizzaType').value;
+        
+        // Show loading overlay
+        const overlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+        const loadingSubtext = document.getElementById('loadingSubtext');
+        
+        overlay.classList.add('active');
+        
+        // Select loading messages based on madness level
+        const messageLevel = Math.min(Math.floor(madnessLevel / 2), loadingMessages.length - 1);
+        const messageSet = loadingMessages[messageLevel];
+        let messageIndex = 0;
+        
+        // Cycle through loading messages
+        const messageInterval = setInterval(() => {
+            if (messageIndex < messageSet.length) {
+                loadingText.textContent = messageSet[messageIndex];
+                
+                // Add increasingly weird subtexts
+                const subtexts = [
+                    "Optimizing for maximum satisfaction",
+                    "Cross-referencing with historical data",
+                    "Applying Six Sigma methodology",
+                    "Consulting the pizza oracle",
+                    "Deploying appetite assessment algorithms",
+                    "Reticulating splines recursively",
+                    "THE CHEESE REMEMBERS",
+                    "PIZZA.EXE HAS TAKEN CONTROL",
+                    "🍕 RESISTANCE IS FUTILE 🍕",
+                    "🍕🍕🍕 PIZZA SINGULARITY ACHIEVED 🍕🍕🍕"
+                ];
+                
+                loadingSubtext.textContent = subtexts[Math.min(madnessLevel, subtexts.length - 1)];
+                messageIndex++;
+            }
+        }, 600);
+        
+        // Calculate results with accurate pizza math
+        setTimeout(() => {
+            clearInterval(messageInterval);
+            overlay.classList.remove('active');
             
-            if (isWarning) {
-                line.style.color = '#FFEB3B';
-                line.style.fontWeight = 'bold';
-            } else if (isError) {
-                line.style.color = '#F44336';
-                line.style.fontWeight = 'bold';
-            } else if (isSuccess) {
-                line.style.color = '#4CAF50';
-                line.style.fontWeight = 'bold';
-                line.style.fontSize = '1.2em';
+            // Pizza size configurations (realistic)
+            const slicesPerPizza = {
+                'standard': 8,   // 14" pizza
+                'large': 10,     // 16" pizza
+                'xl': 12,        // 18" pizza
+                'party': 16      // 20"+ pizza
+            }[pizzaType];
+            
+            // Base consumption rates (slices per person per hour)
+            // Studies show average person eats 2-3 slices in a sitting
+            const baseConsumptionRate = {
+                1: 2,      // 1 hour - just a snack
+                2: 2.5,    // 2 hours - standard meeting
+                4: 3,      // 4 hours - working lunch
+                8: 4,      // 8 hours - full day (includes lunch)
+                16: 6,     // 16 hours - hackathon (multiple meals)
+                24: 8      // 24 hours - emergency (3 meals)
+            }[duration] || 2.5;
+            
+            // Apply hunger multiplier
+            const adjustedConsumption = baseConsumptionRate * hunger;
+            
+            // Total slices needed
+            const totalSlicesNeeded = Math.ceil(teamSize * adjustedConsumption);
+            
+            // Add 10% buffer for safety (no one wants to run out)
+            const slicesWithBuffer = Math.ceil(totalSlicesNeeded * 1.1);
+            
+            // Calculate pizzas needed
+            const pizzasNeeded = Math.ceil(slicesWithBuffer / slicesPerPizza);
+            const totalSlices = pizzasNeeded * slicesPerPizza;
+            const slicesPerPerson = Math.floor(totalSlices / teamSize);
+            
+            // Calculate realistic budget
+            const pricePerPizza = {
+                'standard': 12.99,
+                'large': 15.99,
+                'xl': 18.99,
+                'party': 24.99
+            }[pizzaType];
+            
+            // Add chaos to calculations at higher madness levels
+            let displayPizzas = pizzasNeeded;
+            let displayBudget = (pizzasNeeded * pricePerPizza).toFixed(2);
+            
+            if (madnessLevel >= 5) {
+                displayPizzas += Math.floor(Math.random() * 5);
+            }
+            if (madnessLevel >= 7) {
+                displayPizzas = displayPizzas * 2 + Math.floor(Math.random() * 10);
+            }
+            if (madnessLevel >= 9) {
+                displayPizzas = 42; // The answer to everything
+            }
+            if (madnessLevel >= 10) {
+                displayPizzas = '∞';
+                displayBudget = 'YES';
             }
             
-            terminalContent.appendChild(line);
+            // Track totals for achievements
+            totalPizzasOrdered += pizzasNeeded;
+            totalBudgetSpent += parseFloat(displayBudget);
             
-            let i = 0;
-            const typeWriter = () => {
-                if (i < text.length) {
-                    line.textContent += text.charAt(i);
-                    i++;
-                    terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
-                    setTimeout(typeWriter, Math.random() * 10 + 5);
-                } else {
-                    terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
-                }
-            };
+            // Check achievements with context
+            checkAchievements({
+                teamSize: teamSize,
+                duration: duration,
+                hunger: hunger,
+                pizzaType: pizzaType,
+                pizzasOrdered: pizzasNeeded,
+                budget: parseFloat(displayBudget)
+            });
             
-            typeWriter();
+            // Display results
+            document.getElementById('totalPizzas').textContent = displayPizzas;
+            document.getElementById('totalSlices').textContent = 
+                madnessLevel >= 10 ? '∞' : totalSlices;
+            document.getElementById('perPerson').textContent = 
+                madnessLevel >= 10 ? 'ALL' : slicesPerPerson;
+            document.getElementById('budget').textContent = 
+                madnessLevel >= 10 ? '$YES' : `$${displayBudget}`;
             
-            // Ensure scrolling
-            terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
-        }
-        
-        // Function to run commands sequentially
-        function runCommands(index = 0) {
-            if (index >= commands.length) return;
+            // Add bonus metrics based on madness level
+            addBonusMetrics(pizzasNeeded, teamSize, duration);
             
-            const command = commands[index];
-            appendText(command.text, command.warning, command.error, command.success);
+            document.getElementById('results').classList.add('visible');
             
-            // Ensure scrolling for each command
-            terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
-            
-            setTimeout(() => {
-                runCommands(index + 1);
-            }, command.delay);
-        }
-        
-        // Start running commands
-        runCommands();
-        
-        // Add a shaking effect during dangerous commands
-        let shakeInterval;
-        setTimeout(() => {
-            shakeInterval = setInterval(() => {
-                terminalOverlay.style.transform = `translate(${Math.random() * 5 - 2.5}px, ${Math.random() * 5 - 2.5}px)`;
-            }, 50);
-            
-            setTimeout(() => {
-                clearInterval(shakeInterval);
-                terminalOverlay.style.transform = 'translate(0, 0)';
-            }, 6000);
-        }, 9000); // Start shaking when we get to the dangerous rm command
+            // Add celebration at high madness
+            if (madnessLevel >= 8) {
+                celebrate();
+            }
+        }, 2000 + (madnessLevel * 200)); // Loading gets longer with madness
     };
+    
+    // Celebration animation
+    function celebrate() {
+        for (let i = 0; i < 20; i++) {
+            setTimeout(() => createFallingPizza(), i * 100);
+        }
+        
+        if (madnessLevel >= 10) {
+            document.body.style.animation = 'total-chaos 0.5s';
+            setTimeout(() => {
+                document.body.style.animation = '';
+            }, 500);
+        }
+    }
+    
+    // Reset form function
+    window.resetForm = function() {
+        document.getElementById('pizzaForm').reset();
+        document.getElementById('results').classList.remove('visible');
+        
+        // Track resets for achievement
+        resetCount++;
+        checkAchievements();
+        
+        // Random chance to increase madness on reset
+        if (Math.random() > 0.7) {
+            madnessLevel = Math.min(10, madnessLevel + 1);
+            applyMadnessEffects();
+        }
+    };
+    
+    // Corporate buzzword generator
+    const corporateBuzzwords = {
+        normal: ['synergize', 'optimize', 'leverage', 'streamline', 'implement', 'facilitate'],
+        medium: ['actualize', 'incentivize', 'revolutionize', 'gamify', 'disrupt', 'pivot'],
+        insane: ['blockchain-ify', 'quantumize', 'metaverse-enable', 'AI-powered', 'web3-ready', 'NFT-backed']
+    };
+    
+    function generateBuzzword() {
+        const level = madnessLevel < 3 ? 'normal' : madnessLevel < 7 ? 'medium' : 'insane';
+        const words = corporateBuzzwords[level];
+        return words[Math.floor(Math.random() * words.length)];
+    }
+    
+    // Add bonus metrics to results based on madness
+    function addBonusMetrics(pizzas, teamSize, duration) {
+        if (madnessLevel < 2) return;
+        
+        const metricsContainer = document.querySelector('.metric-grid');
+        if (!metricsContainer) return;
+        
+        // Remove existing bonus metrics
+        document.querySelectorAll('.bonus-metric').forEach(m => m.remove());
+        
+        const bonusMetrics = [];
+        
+        if (madnessLevel >= 2) {
+            bonusMetrics.push({
+                value: Math.floor(Math.random() * 100) + '%',
+                label: 'Pizza ROI',
+                tooltip: 'Return on Investment (Happiness per Dollar)'
+            });
+        }
+        
+        if (madnessLevel >= 3) {
+            bonusMetrics.push({
+                value: (Math.random() * 10).toFixed(1) + 'x',
+                label: 'Productivity Multiplier',
+                tooltip: 'Expected increase in code output'
+            });
+        }
+        
+        if (madnessLevel >= 4) {
+            const synergy = ['Low', 'Medium', 'High', 'MAXIMUM', 'TRANSCENDENT'][Math.floor(Math.random() * 5)];
+            bonusMetrics.push({
+                value: synergy,
+                label: 'Synergy Index',
+                tooltip: 'Cross-functional pizza alignment score'
+            });
+        }
+        
+        if (madnessLevel >= 5) {
+            bonusMetrics.push({
+                value: Math.floor(Math.random() * 1000) + ' pts',
+                label: 'Pizza Credit Score',
+                tooltip: 'Your eligibility for premium toppings'
+            });
+        }
+        
+        if (madnessLevel >= 6) {
+            const vibes = ['Immaculate', 'Chaotic', 'Feral', 'Ascending', 'Quantum'][Math.floor(Math.random() * 5)];
+            bonusMetrics.push({
+                value: vibes,
+                label: 'Vibe Check',
+                tooltip: 'Current team pizza energy levels'
+            });
+        }
+        
+        if (madnessLevel >= 7) {
+            bonusMetrics.push({
+                value: Math.floor(Math.random() * 50) + ' bugs',
+                label: 'Bugs Fixed Per Pizza',
+                tooltip: 'Scientifically proven correlation'
+            });
+        }
+        
+        if (madnessLevel >= 8) {
+            bonusMetrics.push({
+                value: '🍕'.repeat(Math.floor(Math.random() * 5) + 1),
+                label: 'Pizza Happiness Units',
+                tooltip: 'Measured in Standard Pizza Emoji'
+            });
+        }
+        
+        if (madnessLevel >= 9) {
+            bonusMetrics.push({
+                value: 'YES',
+                label: 'Will It Pizza?',
+                tooltip: 'Advanced AI prediction: It will pizza'
+            });
+        }
+        
+        // Add bonus metrics to display
+        bonusMetrics.forEach((metric, index) => {
+            setTimeout(() => {
+                const metricDiv = document.createElement('div');
+                metricDiv.className = 'metric-item bonus-metric';
+                metricDiv.style.cssText = `
+                    animation: slideIn 0.5s ease;
+                    background: linear-gradient(135deg, #f0f0f0, #ffffff);
+                    border: 2px dashed #${Math.floor(Math.random()*16777215).toString(16)};
+                `;
+                metricDiv.innerHTML = `
+                    <div class="metric-value" style="color: #${Math.floor(Math.random()*16777215).toString(16)};">${metric.value}</div>
+                    <div class="metric-label" title="${metric.tooltip}">${metric.label}</div>
+                `;
+                metricsContainer.appendChild(metricDiv);
+            }, index * 200);
+        });
+    }
+    
+    // Secret Easter Eggs
+    let konamiCode = [];
+    const konamiSequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    
+    document.addEventListener('keydown', (e) => {
+        konamiCode.push(e.key);
+        konamiCode = konamiCode.slice(-10);
+        
+        if (konamiCode.join(',') === konamiSequence.join(',')) {
+            activatePizzaMode();
+            konamiCode = [];
+        }
+    });
+    
+    function activatePizzaMode() {
+        document.body.style.animation = 'rainbow 2s linear infinite';
+        
+        // Pizza rain
+        for (let i = 0; i < 50; i++) {
+            setTimeout(() => {
+                const pizza = document.createElement('div');
+                pizza.textContent = '🍕';
+                pizza.style.cssText = `
+                    position: fixed;
+                    top: -50px;
+                    left: ${Math.random() * window.innerWidth}px;
+                    font-size: ${Math.random() * 30 + 20}px;
+                    z-index: 99999;
+                    pointer-events: none;
+                    animation: fall 3s linear;
+                `;
+                document.body.appendChild(pizza);
+                setTimeout(() => pizza.remove(), 3000);
+            }, i * 100);
+        }
+        
+        showToast('🍕 ULTIMATE PIZZA MODE ACTIVATED! 🍕');
+        madnessLevel = Math.min(10, madnessLevel + 2);
+        applyMadnessEffects();
+    }
+    
+    // Add secret click zones
+    let logoClickCount = 0;
+    document.addEventListener('click', (e) => {
+        if (e.target.classList.contains('logo')) {
+            logoClickCount++;
+            if (logoClickCount >= 7) {
+                showToast('You found the secret pizza portal!');
+                madnessLevel = Math.min(10, madnessLevel + 1);
+                applyMadnessEffects();
+                logoClickCount = 0;
+            }
+        }
+    });
+    
+    // Pizza Emergency Hotline
+    function createEmergencyHotline() {
+        if (document.getElementById('emergencyHotline')) return;
+        
+        const hotline = document.createElement('div');
+        hotline.id = 'emergencyHotline';
+        hotline.style.cssText = `
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff0000, #ff6600);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            z-index: 999;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+            display: none;
+        `;
+        hotline.innerHTML = '🚨 PIZZA EMERGENCY HOTLINE';
+        hotline.onclick = function() {
+            const messages = [
+                'Hello, you have reached the Pizza Emergency Response Team. All operators are currently eating pizza. Please hold.',
+                'ALERT: Critical cheese levels detected. Deploying emergency mozzarella.',
+                'Pizza paramedics dispatched. ETA: 30 minutes or it\'s free.',
+                'Have you tried turning the pizza off and on again?',
+                'Error 404: Pizza not found. Initiating backup protocols.',
+                'This is a known issue. Pizza patch 2.0.1 will be deployed next sprint.'
+            ];
+            alert(messages[Math.floor(Math.random() * messages.length)]);
+        };
+        document.body.appendChild(hotline);
+        
+        // Show after 5 calculations
+        if (calculationCount >= 5) {
+            hotline.style.display = 'block';
+        }
+    }
+    
+    // Random IT error popups
+    function showRandomError() {
+        if (Math.random() > 0.9 && madnessLevel >= 3) {
+            const errors = [
+                { code: 'PZA-001', msg: 'Pizza buffer overflow detected. Stack trace: cheese > crust capacity' },
+                { code: 'PZA-418', msg: 'I\'m a teapot. Cannot make pizza.' },
+                { code: 'PZA-503', msg: 'Pizza service unavailable. Retrying with pasta...' },
+                { code: 'PZA-BSOD', msg: 'Blue Screen of Dough. Your pizza has encountered a problem and needs to restart.' },
+                { code: 'PZA-NULL', msg: 'NullPepperoniException: Cannot invoke pizza.addTopping() on null pizza' },
+                { code: 'PZA-MEM', msg: 'Out of memory. Please delete some pizza to continue.' },
+                { code: 'PZA-401', msg: 'Unauthorized pizza access. Please authenticate with valid hunger credentials.' },
+                { code: 'PZA-SEGFAULT', msg: 'Segmentation fault (core dumped). Pizza core saved to /dev/stomach' }
+            ];
+            
+            const error = errors[Math.floor(Math.random() * errors.length)];
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = `
+                position: fixed;
+                top: ${Math.random() * 60 + 20}%;
+                left: ${Math.random() * 60 + 20}%;
+                background: white;
+                border: 2px solid #ff0000;
+                padding: 20px;
+                border-radius: 8px;
+                z-index: 10000;
+                box-shadow: 0 4px 20px rgba(255,0,0,0.3);
+                animation: glitch 0.3s;
+                max-width: 400px;
+            `;
+            errorDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="color: #ff0000; font-weight: bold;">⚠️ ERROR ${error.code}</span>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; cursor: pointer; font-size: 20px;">✕</button>
+                </div>
+                <p style="margin: 0; color: #333;">${error.msg}</p>
+                <button onclick="this.parentElement.remove()" style="margin-top: 10px; padding: 5px 15px; background: #ff0000; color: white; border: none; border-radius: 4px; cursor: pointer;">OK</button>
+            `;
+            document.body.appendChild(errorDiv);
+            
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+    }
+    
+    // Pizza Mood Detector
+    function detectPizzaMood() {
+        const moods = [
+            { mood: 'Optimistic', desc: 'Team believes in pizza-driven development' },
+            { mood: 'Hangry', desc: 'Critical hunger levels detected. Deploy pizza immediately!' },
+            { mood: 'Caffeinated', desc: 'High coffee levels detected. Pizza absorption rate increased by 200%' },
+            { mood: 'Debugging', desc: 'Stress eating mode activated. Double the cheese!' },
+            { mood: 'In Meeting', desc: 'Boredom levels critical. Pizza is the only solution.' },
+            { mood: 'Post-Deploy', desc: 'Celebration mode! Or consolation mode. Either way, pizza.' },
+            { mood: 'Code Review', desc: 'Passive-aggressive hunger detected. Extra toppings recommended.' },
+            { mood: 'Sprint Planning', desc: 'Existential dread levels high. Pizza provides meaning.' }
+        ];
+        
+        const detected = moods[Math.floor(Math.random() * moods.length)];
+        
+        if (madnessLevel >= 4 && Math.random() > 0.7) {
+            const moodDiv = document.createElement('div');
+            moodDiv.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: linear-gradient(135deg, #8b5cf6, #ec4899);
+                color: white;
+                padding: 15px;
+                border-radius: 12px;
+                max-width: 300px;
+                z-index: 1000;
+                animation: slideIn 0.5s ease;
+            `;
+            moodDiv.innerHTML = `
+                <h4 style="margin: 0 0 10px 0;">🧠 Pizza Mood Detected</h4>
+                <p style="margin: 0 0 5px 0; font-weight: bold;">${detected.mood}</p>
+                <p style="margin: 0; font-size: 0.9em; opacity: 0.9;">${detected.desc}</p>
+            `;
+            document.body.appendChild(moodDiv);
+            setTimeout(() => moodDiv.remove(), 4000);
+        }
+    }
+    
+    // Add fake premium features
+    function addPremiumFeatures() {
+        if (madnessLevel >= 6 && !document.getElementById('premiumBanner')) {
+            const banner = document.createElement('div');
+            banner.id = 'premiumBanner';
+            banner.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(90deg, #ffd700, #ffed4e);
+                color: #333;
+                padding: 10px;
+                text-align: center;
+                z-index: 9999;
+                font-weight: bold;
+                animation: slideDown 0.5s ease;
+            `;
+            banner.innerHTML = `
+                ⭐ UPGRADE TO PIZZA PREMIUM™ - Unlock: Quantum Toppings, AI Crust Optimization, Blockchain Delivery Tracking ⭐
+                <button onclick="alert('Payment failed: Credit card tastes better with ranch dressing')" style="margin-left: 20px; padding: 5px 15px; background: #333; color: #ffd700; border: none; border-radius: 4px; cursor: pointer;">UPGRADE NOW</button>
+            `;
+            document.body.appendChild(banner);
+        }
+    }
+    
+    // Initialize enhancements
+    applyMadnessEffects();
+    updateAchievementDisplay();
+    createEmergencyHotline();
+    
+    // Enhanced time-based progression
+    setInterval(() => {
+        checkMadnessProgression();
+        showRandomError();
+        detectPizzaMood();
+        addPremiumFeatures();
+    }, 10000);
+    
+    // Add CSS for animations
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translate(-50%, 100px);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes earthquake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px) rotate(-1deg); }
+            50% { transform: translateX(5px) rotate(1deg); }
+            75% { transform: translateX(-3px) rotate(-0.5deg); }
+        }
+        
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+        
+        @keyframes speedLines {
+            0% { transform: translateX(-100%); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateX(100%); opacity: 0; }
+        }
+        
+        @keyframes fall {
+            0% { 
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% { 
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes gentle-wobble {
+            0%, 100% { transform: rotate(-0.5deg); }
+            50% { transform: rotate(0.5deg); }
+        }
+        
+        @keyframes gentle-breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+    `;
+    document.head.appendChild(style);
 })();

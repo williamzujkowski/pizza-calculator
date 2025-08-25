@@ -1,0 +1,2555 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="description" content="Pizza Calculator for IT Engineers">
+    <meta name="keywords" content="Pizza, Calculator, IT Engineers, Tech Humor, Fun Tool">
+    <meta name="author" content="William Zujkowski">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Pizza Calculator for IT Engineers</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Primary theme colors - green tech theme */
+            --primary-color: #4CAF50;
+            --primary-dark: #388E3C;
+            --primary-light: #A5D6A7;
+            --primary-lightest: #E8F5E9;
+            --accent-color: #FF5722;
+            --accent-light: #FFAB91;
+            --accent-dark: #E64A19;
+            
+            /* Dark mode colors - enhanced for better contrast */
+            --dark-bg: #121212;
+            --dark-surface: #1E1E1E;
+            --dark-surface-light: #2D2D2D;
+            --dark-text: #F0F0F0;
+            --dark-text-secondary: #C0C0C0;
+            --dark-border: #444444;
+            
+            /* Light mode colors - improved harmony */
+            --light-bg: #F5F5F5;
+            --light-surface: #FFFFFF;
+            --light-border: #E0E0E0;
+            --light-text: #212121;
+            --light-text-secondary: #616161;
+            
+            /* Terminal colors - adjusted for better readability */
+            --terminal-green: #4AF626;
+            --terminal-blue: #58B2DC;
+            --terminal-yellow: #FFD700;
+            --terminal-orange: #FFA500;
+            --terminal-red: #FF6347;
+            --terminal-magenta: #FF00FF;
+            --terminal-cyan: #00FFFF;
+            --terminal-bg: #0D1117;
+            --terminal-light-bg: #1A2133;
+            
+            /* UI elements - distinct semantic colors */
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --error-color: #F44336;
+            --info-color: #2196F3;
+            
+            /* Spacing system - consistent scale */
+            --space-xs: 0.25rem;
+            --space-sm: 0.5rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-xxl: 3rem;
+            
+            /* Typography scale */
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-md: 1rem;
+            --font-size-lg: 1.25rem;
+            --font-size-xl: 1.5rem;
+            --font-size-xxl: 2rem;
+            
+            /* Visual elements */
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-dark: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --shadow-inset: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-glow: 0 0 15px rgba(76, 175, 80, 0.5);
+            --border-radius: 12px;
+            --border-radius-sm: 6px;
+            --border-radius-lg: 16px;
+            --border-radius-xl: 24px;
+            
+            /* Z-index layers */
+            --z-hidden: -1;
+            --z-base: 1;
+            --z-raised: 10;
+            --z-dropdown: 100;
+            --z-modal: 1000;
+            --z-toast: 9999;
+            
+            /* Transitions */
+            --transition-fast: 0.2s;
+            --transition-normal: 0.3s;
+            --transition-slow: 0.5s;
+            
+            /* Grid system */
+            --grid-gap: var(--space-lg);
+            --container-padding: var(--space-xl);
+            --container-width: 1200px;
+            --container-width-lg: 1400px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            min-height: 100vh;
+            background-color: var(--light-bg);
+            color: var(--light-text);
+            transition: all var(--transition-normal) ease;
+            background-image: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.05) 1px, transparent 0);
+            background-size: 24px 24px;
+            position: relative;
+            overflow-x: hidden;
+            font-size: var(--font-size-md);
+        }
+
+        code, pre, .terminal-font {
+            font-family: 'Fira Code', 'JetBrains Mono', 'Courier New', monospace;
+        }
+
+        /* Better container handling */
+        .container {
+            max-width: var(--container-width);
+            margin: var(--space-xxl) auto;
+            background-color: var(--light-surface);
+            padding: var(--container-padding);
+            box-shadow: var(--shadow);
+            border-radius: var(--border-radius);
+            transition: all var(--transition-normal) ease;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--light-border);
+            width: 95%; /* Better mobile handling */
+        }
+        
+        /* Focus styles for accessibility */
+        :focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+        
+        /* Reduced motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        /* Decorative header element */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            z-index: 2;
+        }
+
+        /* Noise texture overlay */
+        .container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        /* Header animation */
+        @keyframes headerGlow {
+            0%, 100% { text-shadow: 0 0 5px rgba(255, 87, 34, 0.2); }
+            50% { text-shadow: 0 0 20px rgba(255, 87, 34, 0.4); }
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            font-weight: 800;
+            font-size: 3rem;
+            letter-spacing: -0.5px;
+            text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+            animation: headerGlow 5s infinite;
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Pizza icon with spinning animation */
+        .pizza-icon {
+            font-size: 36px;
+            margin-right: 15px;
+            vertical-align: middle;
+            display: inline-block;
+            animation: spin 20s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        header p {
+            color: var(--light-text-secondary);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+
+        .version-info {
+            display: inline-block;
+            background-color: var(--primary-light);
+            color: var(--dark-bg);
+            padding: 6px 15px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-top: 15px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Animated background for version badge */
+        .version-info::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transform: translateX(-100%);
+            animation: shimmerBadge 5s infinite;
+        }
+
+        @keyframes shimmerBadge {
+            0% { transform: translateX(-100%); }
+            50%, 100% { transform: translateX(100%); }
+        }
+
+        /* Form styling */
+        .form-container {
+            position: relative;
+            z-index: 2; /* Ensure form is above texture overlay */
+        }
+
+        fieldset {
+            border: 2px solid var(--light-border);
+            border-radius: var(--border-radius);
+            padding: var(--space-xl);
+            margin-bottom: var(--space-xxl);
+            transition: all var(--transition-normal) ease;
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-inset);
+        }
+
+        legend {
+            font-weight: 600;
+            padding: var(--space-xs) var(--space-md);
+            color: var(--primary-dark);
+            font-size: var(--font-size-lg);
+            background-color: var(--light-surface);
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Spinning gear icon */
+        legend i {
+            animation: spinGear 8s linear infinite;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        @keyframes spinGear {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--grid-gap);
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: var(--space-xs);
+            font-weight: 600;
+            color: var(--light-text);
+            font-size: var(--font-size-md);
+        }
+
+        label i {
+            color: var(--primary-dark);
+            margin-right: var(--space-xs);
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--light-text-secondary);
+            font-size: var(--font-size-md);
+            pointer-events: none;
+            transition: all var(--transition-fast) ease;
+        }
+
+        input, select {
+            padding: var(--space-md) var(--space-md) var(--space-md) 45px;
+            border: 2px solid var(--light-border);
+            border-radius: var(--border-radius-sm);
+            width: 100%;
+            font-family: inherit;
+            font-size: var(--font-size-md);
+            background-color: var(--light-surface);
+            transition: all var(--transition-fast) ease;
+            line-height: 1.4;
+            box-shadow: var(--shadow-inset);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+        }
+
+        /* Make the icon green when input is focused */
+        input:focus + .input-icon,
+        select:focus + .input-icon {
+            color: var(--primary-color);
+        }
+
+        /* Button styling - Improved */
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+            margin-top: var(--space-xl);
+            justify-content: center;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: var(--space-md) var(--space-xl);
+            cursor: pointer;
+            border-radius: var(--border-radius-sm);
+            font-family: inherit;
+            font-weight: 600;
+            font-size: var(--font-size-md);
+            transition: all var(--transition-fast) ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-xs);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            min-width: 180px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Primary action button styling */
+        .primary-action-button {
+            background-color: var(--accent-color);
+            font-size: 1.2rem;
+            padding: calc(var(--space-md) + 4px) calc(var(--space-xl) + 10px);
+            min-width: 220px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            box-shadow: 0 6px 12px rgba(255, 87, 34, 0.3);
+            text-transform: uppercase;
+        }
+        
+        .primary-action-button:hover {
+            background-color: var(--accent-dark) !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 16px rgba(255, 87, 34, 0.4) !important;
+        }
+        
+        .primary-action-button:active {
+            transform: translateY(-1px) !important;
+        }
+        
+        .primary-action-button i {
+            font-size: 1.4rem;
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover::after {
+            opacity: 1;
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        button i {
+            font-size: 18px;
+        }
+
+        /* Button variants */
+        .button-secondary {
+            background-color: var(--accent-color);
+        }
+
+        .button-secondary:hover {
+            background-color: var(--accent-dark);
+        }
+
+        .button-subtle {
+            background-color: transparent;
+            color: var(--light-text);
+            border: 2px solid var(--light-border);
+        }
+
+        .button-subtle:hover {
+            background-color: var(--light-bg);
+            border-color: var(--light-text-secondary);
+        }
+
+        .button-icon-only {
+            width: 45px;
+            height: 45px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        /* Progress bar */
+        #progressSection {
+            margin-top: 40px;
+        }
+
+        #progressContainer {
+            width: 100%;
+            height: 26px;
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: var(--border-radius-sm);
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-inset);
+        }
+
+        #progressBar {
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
+            transition: width 0.5s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Progress bar animation */
+        #progressBar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.4) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        #progressLabel {
+            margin-top: 12px;
+            font-size: 1rem;
+            color: var(--primary-dark);
+            text-align: center;
+            font-weight: 600;
+            min-height: 1.5em;
+            transition: all var(--transition-normal) ease;
+        }
+
+        /* Results section */
+        #resultSection {
+            margin-top: 40px;
+            transition: all var(--transition-normal) ease;
+        }
+
+        blockquote {
+            margin: 30px 0;
+            padding: 25px;
+            background-color: var(--primary-lightest);
+            border-left: 5px solid var(--primary-color);
+            font-weight: 600;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            position: relative;
+            transition: all var(--transition-normal) ease;
+            line-height: 1.7;
+            box-shadow: var(--shadow);
+        }
+
+        blockquote::before {
+            content: '🍕';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            background: var(--primary-color);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Toast notifications */
+        #toast {
+            visibility: hidden;
+            min-width: 300px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            position: fixed;
+            z-index: var(--z-toast);
+            left: 50%;
+            bottom: 40px;
+            transform: translateX(-50%);
+            font-size: 1rem;
+            box-shadow: var(--shadow-dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 5px solid var(--primary-color);
+        }
+
+        #toast i {
+            font-size: 1.5rem;
+            color: var(--primary-light);
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.8s;
+        }
+
+        @keyframes fadein {
+            from {
+                bottom: 0;
+                opacity: 0;
+            }
+            to {
+                bottom: 40px;
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeout {
+            from {
+                bottom: 40px;
+                opacity: 1;
+            }
+            to {
+                bottom: 0;
+                opacity: 0;
+            }
+        }
+
+        /* Hidden elements */
+        #downloadLink {
+            display: none;
+        }
+
+        /* Email prompt section */
+        #emailPromptSection {
+            background-color: #FFF8E1;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            margin-top: 40px;
+            border: 2px solid var(--accent-light);
+            position: relative;
+            transition: all var(--transition-normal) ease;
+            box-shadow: var(--shadow);
+        }
+
+        #emailPromptSection::before {
+            content: '💼';
+            position: absolute;
+            top: -20px;
+            left: 30px;
+            background: white;
+            padding: 10px;
+            font-size: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-light);
+            box-shadow: var(--shadow);
+        }
+
+        #emailPromptSection p {
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        #emailPromptSection button {
+            margin-top: 15px;
+            background-color: var(--accent-color);
+        }
+
+        #emailPromptSection button:hover {
+            background-color: var(--accent-dark);
+        }
+
+        /* Terminal-like styling */
+        pre {
+            background-color: var(--terminal-bg);
+            color: var(--terminal-green);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            line-height: 1.5;
+            margin-top: 25px;
+            box-shadow: var(--shadow-dark);
+            position: relative;
+            font-size: 0.9rem;
+        }
+
+        pre::before {
+            content: '$ pizza-calculator --report';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 15px;
+            height: 40px; /* Increased height for terminal header */
+            font-size: 0.9rem;
+            color: var(--dark-text);
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+        }
+
+        /* Terminal window controls */
+        pre::after {
+            content: '';
+            position: absolute;
+            top: 8px;
+            right: 70px; /* Moved closer to the left to avoid overflow */
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #FF5F56;
+            box-shadow: 
+                20px 0 0 #FFBD2E, 
+                40px 0 0 #27C93F;
+        }
+
+        /* Dark mode toggle */
+        .dark-mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.1);
+            border: none;
+            font-size: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-normal) ease;
+            z-index: var(--z-dropdown);
+            box-shadow: var(--shadow);
+        }
+
+        .dark-mode-toggle:hover {
+            transform: rotate(45deg);
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Badge for system preference */
+        .dark-mode-toggle::after {
+            content: "system";
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            background: rgba(33, 150, 243, 0.8);
+            color: white;
+            padding: 2px 4px;
+            border-radius: 3px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: bold;
+        }
+        
+        .using-system-preference .dark-mode-toggle::after {
+            opacity: 1;
+        }
+        
+        /* Vibe Mode toggle */
+        .vibe-mode-toggle {
+            position: fixed;
+            top: 20px;
+            right: 90px; /* Position to the left of dark mode toggle */
+            cursor: pointer;
+            background: rgba(255, 87, 34, 0.2);
+            border: none;
+            font-size: 24px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-normal) ease;
+            z-index: var(--z-dropdown);
+            box-shadow: var(--shadow);
+            color: #FF5722;
+        }
+
+        .vibe-mode-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+            background: rgba(255, 87, 34, 0.3);
+            box-shadow: 0 0 15px rgba(255, 87, 34, 0.5);
+        }
+        
+        .vibe-mode-active {
+            background: linear-gradient(45deg, #FF5722, #E91E63, #9C27B0, #3F51B5, #2196F3);
+            background-size: 300% 300%;
+            animation: vibeGradient 3s ease infinite;
+            color: white;
+            box-shadow: 0 0 20px rgba(255, 87, 34, 0.7);
+        }
+        
+        @keyframes vibeGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Dark mode styles - Enhanced for better contrast and accessibility */
+        .dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--dark-text);
+            background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+        }
+
+        .dark-mode .container {
+            background-color: var(--dark-surface);
+            color: var(--dark-text);
+            box-shadow: var(--shadow-dark);
+            border-color: var(--dark-border);
+        }
+
+        .dark-mode header p {
+            color: var(--dark-text-secondary);
+        }
+
+        .dark-mode fieldset {
+            border-color: var(--dark-border);
+            background-color: rgba(46, 46, 46, 0.9);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .dark-mode legend {
+            background-color: var(--dark-surface);
+            color: var(--primary-light);
+            box-shadow: var(--shadow-dark);
+        }
+        
+        .dark-mode input, 
+        .dark-mode select {
+            background-color: var(--dark-surface-light);
+            border-color: var(--dark-border);
+            color: var(--dark-text);
+        }
+        
+        .dark-mode input:focus, 
+        .dark-mode select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+        }
+
+        .dark-mode blockquote {
+            background-color: var(--dark-surface-light);
+            border-left: 5px solid var(--primary-color);
+            color: var(--dark-text);
+        }
+
+        .dark-mode label {
+            color: var(--dark-text);
+        }
+
+        .dark-mode input, 
+        .dark-mode select {
+            background-color: var(--dark-surface-light);
+            border-color: #444;
+            color: var(--dark-text);
+            box-shadow: var(--shadow-inset);
+        }
+
+        .dark-mode .input-icon {
+            color: var(--dark-text-secondary);
+        }
+
+        .dark-mode .version-info {
+            background-color: var(--primary-dark);
+            color: white;
+        }
+
+        .dark-mode #progressContainer {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .dark-mode #progressLabel {
+            color: var(--primary-light);
+        }
+
+        .dark-mode #emailPromptSection {
+            background-color: rgba(255, 87, 34, 0.1);
+            border-color: rgba(255, 87, 34, 0.3);
+        }
+
+        .dark-mode #emailPromptSection::before {
+            background-color: var(--dark-surface);
+            border-color: rgba(255, 87, 34, 0.3);
+        }
+
+        .dark-mode .button-subtle {
+            color: var(--dark-text);
+            border-color: #444;
+        }
+
+        .dark-mode .button-subtle:hover {
+            background-color: var(--dark-surface-light);
+            border-color: #666;
+        }
+        
+        /* Advanced button section styling */
+        .advanced-button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px !important;
+            justify-content: center;
+            border-top: 1px solid rgba(127, 127, 127, 0.2);
+            padding-top: 20px;
+        }
+        
+        .dark-mode .advanced-button-group {
+            border-top-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .advanced-button-group > div {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--light-text-secondary);
+        }
+        
+        .dark-mode .advanced-button-group > div {
+            color: var(--dark-text-secondary);
+        }
+
+        /* Matrix rain effect for pre in dark mode */
+        .dark-mode pre {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dark-mode pre::before {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .dark-mode pre::after {
+            background-color: #FF5F56;
+            box-shadow: 
+                20px 0 0 #FFBD2E, 
+                40px 0 0 #27C93F;
+        }
+
+        .dark-mode pre .matrix-effect {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                rgba(10, 40, 10, 0.1) 10%, 
+                rgba(10, 30, 10, 0.2) 30%, 
+                rgba(10, 20, 10, 0.3) 60%
+            );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Pizza containers */
+        .pizza-report-container,
+        #chaos-container {
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-top: 40px;
+            position: relative;
+            transition: all var(--transition-normal) ease;
+            box-shadow: var(--shadow);
+        }
+
+        .pizza-report-container {
+            border: 2px solid var(--primary-color);
+            background-color: rgba(76, 175, 80, 0.05);
+        }
+
+        #chaos-container {
+            border: 2px dashed var(--terminal-red);
+            background-color: rgba(255, 99, 71, 0.05);
+        }
+
+        .dark-mode .pizza-report-container {
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        .dark-mode #chaos-container {
+            background-color: rgba(255, 99, 71, 0.1);
+        }
+
+        .pizza-report-container h3,
+        #chaos-container h3 {
+            margin-bottom: 20px;
+            font-weight: 700;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pizza-report-container h3 {
+            color: var(--primary-dark);
+        }
+
+        #chaos-container h3 {
+            color: var(--terminal-red);
+        }
+
+        /* Metrics section */
+        .metrics-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric-box {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius-sm);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: var(--shadow);
+            transition: all var(--transition-fast) ease;
+        }
+
+        .metric-box:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-dark);
+        }
+
+        .metric-icon {
+            font-size: 28px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .metric-content {
+            flex: 1;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        /* Easter egg - Konami code animation */
+        .pizza-rain {
+            position: fixed;
+            top: -100px;
+            animation: fall 8s linear infinite;
+            z-index: var(--z-modal);
+            font-size: 30px;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(calc(100vh + 100px)) rotate(720deg);
+            }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+            height: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        .dark-mode ::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+
+        /* Additional animation effects */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        .glow-text {
+            text-shadow: 0 0 5px var(--primary-light);
+        }
+
+        /* Dark mode button styles */
+        .dark-mode button.button-subtle {
+            border-color: var(--dark-border);
+            color: var(--dark-text);
+        }
+        
+        .dark-mode button.button-subtle:hover {
+            background-color: var(--dark-surface-light);
+            border-color: var(--primary-light);
+        }
+        
+        .dark-mode .button-secondary {
+            background-color: var(--accent-dark);
+        }
+        
+        /* Form elements in dark mode */
+        .dark-mode label {
+            color: var(--dark-text);
+        }
+        
+        .dark-mode .input-icon {
+            color: var(--dark-text-secondary);
+        }
+        
+        .dark-mode .tooltip-text {
+            background-color: var(--dark-surface-light);
+            color: var(--dark-text);
+            border-color: var(--dark-border);
+        }
+
+        /* Responsive adjustments - improved for better usability */
+        @media (max-width: 1200px) {
+            .container {
+                max-width: 95%;
+                margin: var(--space-lg) auto;
+            }
+        }
+        
+        /* Tablet adjustments */
+        @media (max-width: 1024px) {
+            :root {
+                --container-padding: var(--space-lg);
+            }
+            
+            .container {
+                margin: var(--space-md) auto;
+            }
+            
+            .form-grid {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            }
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+                font-size: var(--font-size-sm);
+            }
+
+            .container {
+                padding: var(--space-md);
+                margin: var(--space-xs);
+                border-radius: var(--border-radius-sm);
+                width: auto;
+            }
+
+            h1 {
+                font-size: var(--font-size-xl);
+            }
+
+            fieldset {
+                padding: var(--space-md);
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-md);
+            }
+
+            /* Keep buttons horizontal but make them wrap nicely */
+            .button-group {
+                justify-content: center;
+                gap: var(--space-sm);
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                padding: var(--space-sm) var(--space-md);
+                font-size: var(--font-size-sm);
+                min-width: 100%;
+                max-width: 300px;
+            }
+            
+            /* Keep primary action button prominent on mobile */
+            .primary-action-button {
+                order: -1;
+                font-size: 1.1rem;
+                padding: calc(var(--space-md) + 2px) var(--space-md);
+            }
+
+            .metrics-section {
+                grid-template-columns: 1fr;
+            }
+
+            .dark-mode-toggle,
+            .vibe-mode-toggle {
+                top: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+                font-size: 20px;
+            }
+        }
+
+        /* Fancy features */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            width: 200px;
+            box-shadow: var(--shadow-dark);
+            font-size: 0.9rem;
+        }
+
+        .tooltip .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Glitch effect for Easter egg elements */
+        .glitch-text {
+            position: relative;
+            animation: glitch 3s infinite;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75), -0.05em -0.025em 0 rgba(0, 255, 0, 0.75), 0.025em 0.05em 0 rgba(0, 0, 255, 0.75); }
+            14% { text-shadow: 0.05em 0 0 rgba(255, 0, 0, 0.75), -0.05em -0.025em 0 rgba(0, 255, 0, 0.75), 0.025em 0.05em 0 rgba(0, 0, 255, 0.75); }
+            15% { text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, 0.75), 0.025em 0.025em 0 rgba(0, 255, 0, 0.75), -0.05em -0.05em 0 rgba(0, 0, 255, 0.75); }
+            49% { text-shadow: -0.05em -0.025em 0 rgba(255, 0, 0, 0.75), 0.025em 0.025em 0 rgba(0, 255, 0, 0.75), -0.05em -0.05em 0 rgba(0, 0, 255, 0.75); }
+            50% { text-shadow: 0.025em 0.05em 0 rgba(255, 0, 0, 0.75), 0.05em 0 0 rgba(0, 255, 0, 0.75), 0 -0.05em 0 rgba(0, 0, 255, 0.75); }
+            99% { text-shadow: 0.025em 0.05em 0 rgba(255, 0, 0, 0.75), 0.05em 0 0 rgba(0, 255, 0, 0.75), 0 -0.05em 0 rgba(0, 0, 255, 0.75); }
+            100% { text-shadow: -0.025em 0 0 rgba(255, 0, 0, 0.75), -0.025em -0.025em 0 rgba(0, 255, 0, 0.75), -0.025em -0.05em 0 rgba(0, 0, 255, 0.75); }
+        }
+
+        /* Glass morphism for card elements */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-mode .glass-card {
+            background: rgba(20, 20, 20, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Console styling for tech-themed elements */
+        .console-log {
+            font-family: 'Fira Code', monospace;
+            padding: 15px;
+            border-radius: var(--border-radius-sm);
+            color: #00FF00;
+            background-color: #0D1117;
+            margin: 10px 0;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .console-log::before {
+            content: '>';
+            position: absolute;
+            left: 10px;
+            color: #00FF00;
+        }
+
+        /* Terminal cursor animation */
+        .cursor::after {
+            content: '▋';
+            display: inline-block;
+            animation: blink 1s infinite;
+        }
+
+        /* Quick navbar/tabs for future features */
+        .nav-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--light-border);
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .nav-tabs::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .nav-tab:hover {
+            color: var(--primary-color);
+        }
+
+        .nav-tab.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+        }
+
+        .dark-mode .nav-tabs {
+            border-bottom-color: #444;
+        }
+
+        /* Decorative lines in the background */
+        .bg-lines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: var(--z-hidden);
+            pointer-events: none;
+            opacity: 0.1;
+        }
+
+        .bg-lines::before,
+        .bg-lines::after {
+            content: '';
+            position: absolute;
+            background: var(--primary-color);
+        }
+
+        .bg-lines::before {
+            width: 1px;
+            height: 100%;
+            left: 20%;
+            top: 0;
+        }
+
+        .bg-lines::after {
+            height: 1px;
+            width: 100%;
+            top: 30%;
+            left: 0;
+        }
+
+        .dark-mode .bg-lines {
+            opacity: 0.05;
+        }
+
+        /* Position indicator for scroll */
+        .scroll-indicator {
+            height: 5px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            z-index: var(--z-modal);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+        
+        /* Vibe Mode Styles */
+        .vibe-mode {
+            /* Psychedelic background */
+            background: linear-gradient(
+                45deg, 
+                #FF5722, #E91E63, #9C27B0, #3F51B5, #2196F3, #00BCD4, #4CAF50, #8BC34A, #FFEB3B, #FF9800
+            );
+            background-size: 1000% 1000%;
+            animation: vibeBackground 30s ease infinite;
+        }
+        
+        @keyframes vibeBackground {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Pulsating, moving elements */
+        .vibe-mode .container,
+        .vibe-mode blockquote,
+        .vibe-mode button,
+        .vibe-mode input,
+        .vibe-mode select,
+        .vibe-mode pre,
+        .vibe-mode fieldset,
+        .vibe-mode .ai-toppings-container,
+        .vibe-mode #pizza-report-container,
+        .vibe-mode #chaos-container {
+            transition: all 0.5s ease;
+            animation: vibePulse 4s infinite;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+        }
+        
+        @keyframes vibePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Make text rainbow colored */
+        .vibe-mode h1,
+        .vibe-mode h2,
+        .vibe-mode h3,
+        .vibe-mode h4,
+        .vibe-mode p,
+        .vibe-mode label,
+        .vibe-mode blockquote,
+        .vibe-mode .terminal-font {
+            background: linear-gradient(
+                to right,
+                #FF5722, #E91E63, #9C27B0, #3F51B5, #2196F3, #00BCD4, #4CAF50
+            );
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbowText 10s ease infinite;
+            background-size: 400% 100%;
+        }
+        
+        @keyframes rainbowText {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* Walking elements animation */
+        .vibe-mode-walking {
+            animation: walk 10s infinite;
+            position: relative;
+        }
+        
+        .vibe-mode-walking::before,
+        .vibe-mode-walking::after {
+            content: "👣";
+            position: absolute;
+            bottom: -15px;
+            opacity: 0.8;
+            font-size: 20px;
+            animation: walkFeet 1s infinite alternate;
+        }
+        
+        .vibe-mode-walking::before {
+            left: 25%;
+        }
+        
+        .vibe-mode-walking::after {
+            left: 65%;
+        }
+        
+        @keyframes walk {
+            0% { transform: translateX(0) rotate(0deg); }
+            25% { transform: translateX(50px) rotate(5deg); }
+            50% { transform: translateX(0) rotate(-5deg); }
+            75% { transform: translateX(-50px) rotate(5deg); }
+            100% { transform: translateX(0) rotate(0deg); }
+        }
+        
+        @keyframes walkFeet {
+            0% { transform: rotateX(0deg); }
+            100% { transform: rotateX(40deg); }
+        }
+        
+        /* Melting elements */
+        .vibe-mode-melting {
+            animation: melt 8s infinite;
+        }
+        
+        @keyframes melt {
+            0%, 100% { transform: perspective(400px) rotateX(0); }
+            50% { transform: perspective(400px) rotateX(10deg) scaleY(0.85) translateY(20px); }
+        }
+        
+        /* Floating elements */
+        .vibe-mode-floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        /* Special terminal effects for vibe mode */
+        .vibe-mode pre {
+            background: linear-gradient(45deg, #000000, #0D1117, #1A2133, #0D1117, #000000);
+            background-size: 400% 400%;
+            animation: vibeTerminal 10s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        @keyframes vibeTerminal {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .vibe-mode pre::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                rgba(255, 0, 255, 0.1),
+                rgba(0, 255, 255, 0.1)
+            );
+            pointer-events: none;
+            z-index: 1;
+            mix-blend-mode: screen;
+        }
+        
+        /* Glitchy text */
+        .vibe-mode-glitch {
+            animation: glitchText 5s infinite;
+            position: relative;
+            display: inline-block;
+        }
+        
+        @keyframes glitchText {
+            0%, 100% { transform: translate(0); }
+            10% { transform: translate(-2px, 2px); }
+            20% { transform: translate(2px, -2px); }
+            30% { transform: translate(-1px, -1px); }
+            40% { transform: translate(1px, 1px); }
+            50% { transform: translate(0); }
+            60% { transform: translate(1px, -1px); }
+            70% { transform: translate(-1px, 1px); }
+            80% { transform: translate(3px, -2px); }
+            90% { transform: translate(-3px, -1px); }
+        }
+
+        /* Konami Code Effects */
+        @keyframes rainbow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        @keyframes fall {
+            0% { 
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% { 
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Secret Pizza Mode Indicator */
+        .secret-mode-active {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #ffe66d);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            z-index: 10000;
+            animation: pulse 1s infinite;
+        }
+    </style>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body lang="en">
+    <!-- Background decorative elements -->
+    <div class="bg-lines"></div>
+    <div class="scroll-indicator"></div>
+    
+    <!-- Toast notifications -->
+    <div id="toast">
+        <i class="fas fa-info-circle"></i>
+        <span id="toast-message"></span>
+    </div>
+    
+    <!-- Dark mode toggle (dblclick to reset to system preference) -->
+    <button class="dark-mode-toggle" onclick="toggleDarkMode()" ondblclick="resetToSystemTheme()" title="Click: Toggle Dark Mode, Double-click: Use System Setting">
+        <i class="fas fa-moon"></i>
+    </button>
+    
+    <!-- Vibe Mode toggle -->
+    <button class="vibe-mode-toggle" onclick="toggleVibeMode()" title="Toggle Vibe Mode">
+        <i class="fas fa-head-side-virus"></i>
+    </button>
+
+    <main class="container">
+        <header>
+            <h1><span class="pizza-icon">🍕</span>Pizza Calculator for IT Engineers</h1>
+            <p>Calculate how much pizza your hungry engineers need after hours of debugging!</p>
+            <div class="version-info">v1.0.2 - Now with Quantum Pizza Support</div>
+        </header>
+
+        <section class="form-container">
+            <form id="pizzaForm" onsubmit="return false;">
+                <fieldset class="glass-card">
+                    <legend><i class="fas fa-cog fa-spin"></i> Enter Your Details</legend>
+
+                    <div class="form-grid">
+                        <div class="form-row">
+                            <label for="attendees"><i class="fas fa-users"></i> Number of Attendees</label>
+                            <div class="input-group tooltip">
+                                <span class="input-icon"><i class="fas fa-users"></i></span>
+                                <input type="number" id="attendees" name="attendees" value="5" min="1" class="icon-input">
+                                <span class="tooltip-text">How many hungry developers will be at your meeting?</span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="pizzaType"><i class="fas fa-pizza-slice"></i> Select Pizza Style</label>
+                            <div class="input-group tooltip">
+                                <span class="input-icon"><i class="fas fa-pizza-slice"></i></span>
+                                <select id="pizzaType" name="pizzaType" class="icon-input">
+                                    <option value="1">NY Pizza (Default)</option>
+                                    <option value="0.5">Detroit Pizza</option>
+                                    <option value="0.6">Chicago Pizza</option>
+                                    <option value="2">California Pizza Kitchen</option>
+                                    <option value="3">Hot Pockets</option>
+                                    <option value="100">Blockchain Pizza</option>
+                                    <option value="cloud">Cloud Pizza</option>
+                                    <option value="quantum">Quantum Pizza (Schrodinger's Snack)</option>
+                                    <option value="pineapple">WiFi Pineapple Pizza</option>
+                                </select>
+                                <span class="tooltip-text">Each style has different computation algorithms</span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="slicesPerPerson"><i class="fas fa-utensils"></i> Average Slices per Person</label>
+                            <div class="input-group tooltip">
+                                <span class="input-icon"><i class="fas fa-utensils"></i></span>
+                                <input type="number" id="slicesPerPerson" name="slicesPerPerson" value="3" min="1" class="icon-input">
+                                <span class="tooltip-text">How many slices can a dev consume?</span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="hoursDebugging"><i class="fas fa-bug"></i> Hours Spent Debugging</label>
+                            <div class="input-group tooltip">
+                                <span class="input-icon"><i class="fas fa-bug"></i></span>
+                                <input type="number" id="hoursDebugging" name="hoursDebugging" value="2" min="0" class="icon-input">
+                                <span class="tooltip-text">More debugging = more hunger!</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" onclick="calculatePizzas()" class="tooltip primary-action-button">
+                            <i class="fas fa-calculator"></i> Calculate Pizza
+                            <span class="tooltip-text">Run the pizza algorithm</span>
+                        </button>
+                        <button type="button" onclick="downloadReport()" class="button-secondary tooltip">
+                            <i class="fas fa-download"></i> Download Report
+                            <span class="tooltip-text">Save calculation results</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Additional buttons will be added here by the JS -->
+                </fieldset>
+            </form>
+        </section>
+
+        <section id="progressSection">
+            <div id="progressContainer">
+                <div id="progressBar"></div>
+            </div>
+            <p id="progressLabel" class="terminal-font"></p>
+        </section>
+
+        <section id="resultSection">
+            <div id="result" role="alert" aria-live="polite"></div>
+        </section>
+
+        <section id="emailPromptSection" style="display:none;" class="glass-card">
+            <p><i class="fas fa-briefcase"></i> If you're ordering 42 pizzas or more, please provide your email so our Enterprise Pizza Sales Team can
+                contact you:</p>
+            <div class="input-group">
+                <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                <input type="email" id="emailInput" placeholder="Enter your email" class="icon-input">
+            </div>
+            <button type="button" onclick="submitEmail()" class="button-secondary">
+                <i class="fas fa-paper-plane"></i> Submit Email
+            </button>
+        </section>
+
+        <a id="downloadLink" href="#" download="Pizza_Calculation_Report.txt">Download Pizza Report</a>
+    </main>
+
+    <script src="./pizza_calc.js"></script>
+    
+    <script>
+        // Add matrix effect to pre elements in dark mode
+        function addMatrixEffect() {
+            if (document.body.classList.contains('dark-mode')) {
+                document.querySelectorAll('pre').forEach(pre => {
+                    if (!pre.querySelector('.matrix-effect')) {
+                        const effect = document.createElement('div');
+                        effect.className = 'matrix-effect';
+                        pre.appendChild(effect);
+                    }
+                });
+            } else {
+                document.querySelectorAll('.matrix-effect').forEach(effect => {
+                    effect.remove();
+                });
+            }
+        }
+        
+        // Vibe mode variables
+        let vibeModeActive = false;
+        let chaosInterval;
+        let walkingElements = [];
+        let meltingElements = [];
+        let floatingElements = [];
+        let glitchingElements = [];
+        
+        // Toggle vibe mode on and off
+        function toggleVibeMode() {
+            vibeModeActive = !vibeModeActive;
+            
+            // Toggle button appearance
+            const vibeBtn = document.querySelector('.vibe-mode-toggle');
+            if (vibeModeActive) {
+                vibeBtn.classList.add('vibe-mode-active');
+                vibeBtn.innerHTML = '<i class="fas fa-dizzy"></i>';
+                document.body.classList.add('vibe-mode');
+                
+                // Start the chaos
+                startVibeChaos();
+                showToast("🌈 Vibe Mode activated! Things might get weird...", "warning");
+            } else {
+                vibeBtn.classList.remove('vibe-mode-active');
+                vibeBtn.innerHTML = '<i class="fas fa-head-side-virus"></i>';
+                document.body.classList.remove('vibe-mode');
+                
+                // Stop the chaos
+                stopVibeChaos();
+                showToast("Vibe Mode deactivated. Reality restored.", "success");
+            }
+            
+            // Save preference
+            localStorage.setItem('vibeMode', vibeModeActive);
+        }
+        
+        // Start chaotic vibe effects
+        function startVibeChaos() {
+            // Clear any existing chaos
+            stopVibeChaos();
+            
+            // Apply initial element animations
+            applyRandomEffects();
+            
+            // Set interval for continuous chaos
+            chaosInterval = setInterval(() => {
+                // Occasionally apply new effects
+                if (Math.random() < 0.2) {
+                    applyRandomEffects();
+                }
+                
+                // Occasionally show weird messages
+                if (Math.random() < 0.1) {
+                    showChaosMessage();
+                }
+                
+                // Occasionally add glitch effects to text
+                if (Math.random() < 0.05) {
+                    glitchRandomText();
+                }
+                
+                // Occasionally make buttons do unexpected things
+                if (Math.random() < 0.03) {
+                    randomButtonChaos();
+                }
+                
+                // Occasionally add pizza facts
+                if (Math.random() < 0.08) {
+                    showRandomPizzaFact();
+                }
+            }, 5000);
+        }
+        
+        // Stop all chaotic effects
+        function stopVibeChaos() {
+            // Clear interval
+            if (chaosInterval) {
+                clearInterval(chaosInterval);
+            }
+            
+            // Remove special classes from elements
+            document.querySelectorAll('.vibe-mode-walking, .vibe-mode-melting, .vibe-mode-floating, .vibe-mode-glitch').forEach(el => {
+                el.className = el.className.replace(/vibe-mode-(walking|melting|floating|glitch)/g, '');
+            });
+            
+            // Reset arrays
+            walkingElements = [];
+            meltingElements = [];
+            floatingElements = [];
+            glitchingElements = [];
+        }
+        
+        // Apply random animations to elements
+        function applyRandomEffects() {
+            // Clear previous animations
+            [...walkingElements, ...meltingElements, ...floatingElements].forEach(el => {
+                el.className = el.className
+                    .replace('vibe-mode-walking', '')
+                    .replace('vibe-mode-melting', '')
+                    .replace('vibe-mode-floating', '');
+            });
+            
+            // Reset arrays
+            walkingElements = [];
+            meltingElements = [];
+            floatingElements = [];
+            
+            // Select random buttons to walk
+            const buttons = Array.from(document.querySelectorAll('button:not(.dark-mode-toggle):not(.vibe-mode-toggle)'));
+            const walkCount = Math.min(Math.floor(Math.random() * 3) + 1, buttons.length);
+            
+            for (let i = 0; i < walkCount; i++) {
+                const randomIndex = Math.floor(Math.random() * buttons.length);
+                const button = buttons.splice(randomIndex, 1)[0];
+                button.classList.add('vibe-mode-walking');
+                walkingElements.push(button);
+            }
+            
+            // Select random elements to melt
+            const meltCandidates = Array.from(document.querySelectorAll('fieldset, blockquote, .ai-toppings-container, #pizza-report-container'));
+            const meltCount = Math.min(Math.floor(Math.random() * 2) + 1, meltCandidates.length);
+            
+            for (let i = 0; i < meltCount; i++) {
+                if (meltCandidates.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * meltCandidates.length);
+                    const element = meltCandidates.splice(randomIndex, 1)[0];
+                    element.classList.add('vibe-mode-melting');
+                    meltingElements.push(element);
+                }
+            }
+            
+            // Select random elements to float
+            const floatCandidates = Array.from(document.querySelectorAll('input, select, h3, .button-group'));
+            const floatCount = Math.min(Math.floor(Math.random() * 3) + 1, floatCandidates.length);
+            
+            for (let i = 0; i < floatCount; i++) {
+                if (floatCandidates.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * floatCandidates.length);
+                    const element = floatCandidates.splice(randomIndex, 1)[0];
+                    element.classList.add('vibe-mode-floating');
+                    floatingElements.push(element);
+                }
+            }
+        }
+        
+        // Show random chaotic toast messages
+        function showChaosMessage() {
+            const messages = [
+                "Database connection unstable due to quantum fluctuations",
+                "BREAKING: All changes pushed directly to production!",
+                "Pizza server experiencing higher dimensional drift",
+                "WARNING: Missing semicolon detected in reality.js",
+                "The Matrix has you... Order more pizza to escape",
+                "Reality compilation error at line 42: Unexpected universe",
+                "Deleting production database in 3... 2... 1... (just kidding)",
+                "Your code has achieved sentience and is ordering its own pizza",
+                "Time-space anomaly detected in pizza delivery algorithm",
+                "Pizza particles experiencing quantum entanglement",
+                "The pizza is both delivered and not delivered until observed",
+                "ALERT: Someone used tabs instead of spaces in the universe config",
+                "Synesthesia module activated: You can now taste the code colors"
+            ];
+            
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            showToast(randomMessage, "warning");
+        }
+        
+        // Add glitch effect to random text elements
+        function glitchRandomText() {
+            // Remove previous glitch effects
+            glitchingElements.forEach(el => {
+                el.className = el.className.replace('vibe-mode-glitch', '');
+                el.textContent = el.dataset.originalText || el.textContent;
+            });
+            
+            glitchingElements = [];
+            
+            // Get text elements
+            const textElements = Array.from(document.querySelectorAll('h1, h2, h3, p, label, button'));
+            const glitchCount = Math.min(Math.floor(Math.random() * 2) + 1, textElements.length);
+            
+            for (let i = 0; i < glitchCount; i++) {
+                if (textElements.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * textElements.length);
+                    const element = textElements.splice(randomIndex, 1)[0];
+                    
+                    // Save original text
+                    if (!element.dataset.originalText) {
+                        element.dataset.originalText = element.textContent;
+                    }
+                    
+                    // Apply glitch class
+                    element.classList.add('vibe-mode-glitch');
+                    
+                    // Occasionally scramble the text
+                    if (Math.random() < 0.3) {
+                        const originalText = element.dataset.originalText;
+                        const glitchText = originalText
+                            .split('')
+                            .map(char => {
+                                if (Math.random() < 0.2) {
+                                    const glitchChars = "!@#$%^&*()_+{}|:<>?~`-=[]\\;',./";
+                                    return glitchChars.charAt(Math.floor(Math.random() * glitchChars.length));
+                                }
+                                return char;
+                            })
+                            .join('');
+                        
+                        element.textContent = glitchText;
+                        
+                        // Restore after short delay
+                        setTimeout(() => {
+                            if (element.classList.contains('vibe-mode-glitch')) {
+                                element.textContent = originalText;
+                            }
+                        }, 2000);
+                    }
+                    
+                    glitchingElements.push(element);
+                }
+            }
+            
+            // Clean up after some time
+            setTimeout(() => {
+                glitchingElements.forEach(el => {
+                    el.className = el.className.replace('vibe-mode-glitch', '');
+                    el.textContent = el.dataset.originalText || el.textContent;
+                });
+                glitchingElements = [];
+            }, 5000);
+        }
+        
+        // Scroll indicator
+        window.addEventListener('scroll', function() {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.querySelector('.scroll-indicator').style.width = scrolled + '%';
+        });
+        
+        // Easter egg - Konami code
+        let konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        let konamiPosition = 0;
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === konamiCode[konamiPosition]) {
+                konamiPosition++;
+                
+                if (konamiPosition === konamiCode.length) {
+                    activatePizzaRain();
+                    konamiPosition = 0;
+                }
+            } else {
+                konamiPosition = 0;
+            }
+        });
+        
+        function activatePizzaRain() {
+            const pizzaEmojis = ['🍕', '🍕', '🍕', '🧀', '🍅', '🌶️', '🍄', '🥓', '👨‍💻', '🖥️', '🐧', '⚙️', '🔍', '🐛', '🔧'];
+            const glitchText = document.createElement('div');
+            glitchText.className = 'glitch-text';
+            glitchText.textContent = 'PIZZA RAIN ACTIVATED';
+            glitchText.style.position = 'fixed';
+            glitchText.style.top = '50%';
+            glitchText.style.left = '50%';
+            glitchText.style.transform = 'translate(-50%, -50%)';
+            glitchText.style.fontSize = '3rem';
+            glitchText.style.fontWeight = 'bold';
+            glitchText.style.zIndex = '1001';
+            glitchText.style.color = '#FF5722';
+            document.body.appendChild(glitchText);
+            
+            setTimeout(() => {
+                glitchText.remove();
+            }, 2000);
+            
+            for (let i = 0; i < 50; i++) {
+                let pizza = document.createElement('div');
+                pizza.className = 'pizza-rain';
+                pizza.textContent = pizzaEmojis[Math.floor(Math.random() * pizzaEmojis.length)];
+                pizza.style.left = Math.random() * 100 + 'vw';
+                pizza.style.animationDuration = (Math.random() * 4 + 3) + 's';
+                pizza.style.transform = `rotate(${Math.random() * 360}deg)`;
+                pizza.style.fontSize = `${Math.random() * 30 + 20}px`;
+                pizza.style.opacity = Math.random() * 0.5 + 0.5;
+                document.body.appendChild(pizza);
+                
+                setTimeout(() => {
+                    pizza.remove();
+                }, 10000);
+            }
+            
+            // Show toast message
+            showToast("🎮 Konami Code Activated: Pizza Rain!", "success");
+        }
+        
+        // Custom toast notification
+        function showToast(message, type = "info") {
+            const toast = document.getElementById('toast');
+            const messageEl = document.getElementById('toast-message');
+            
+            if (!toast || !messageEl) return;
+            
+            messageEl.textContent = message;
+            
+            // Set icon based on type
+            const iconEl = toast.querySelector('i');
+            if (iconEl) {
+                iconEl.className = type === "success" ? "fas fa-check-circle" : 
+                                  type === "error" ? "fas fa-exclamation-circle" : 
+                                  type === "warning" ? "fas fa-exclamation-triangle" : 
+                                  "fas fa-info-circle";
+                
+                iconEl.style.color = type === "success" ? "#4CAF50" : 
+                                   type === "error" ? "#F44336" : 
+                                   type === "warning" ? "#FF9800" : 
+                                   "#2196F3";
+            }
+            
+            toast.className = "toast show";
+            setTimeout(() => {
+                toast.className = toast.className.replace("show", "");
+            }, 3000);
+        }
+        
+        // Override default toast function to use our enhanced version
+        window.showToast = showToast;
+        
+        // Dark mode toggle
+        function toggleDarkMode() {
+            // Toggle the dark mode class
+            document.body.classList.toggle('dark-mode');
+            
+            // Store user preference (overriding system default)
+            localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+            
+            // Remove system preference indicator
+            document.body.classList.remove('using-system-preference');
+            
+            // Update icon
+            const btn = document.querySelector('.dark-mode-toggle i');
+            if (btn) {
+                if (document.body.classList.contains('dark-mode')) {
+                    btn.className = 'fas fa-sun';
+                } else {
+                    btn.className = 'fas fa-moon';
+                }
+            }
+            
+            // Add matrix effect to pre elements in dark mode
+            addMatrixEffect();
+            
+            // Show a toast message
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            if (isDarkMode) {
+                showToast("Dark mode activated. Saving your eyeballs since 2025.", "info");
+            } else {
+                showToast("Light mode activated. Hello, sunshine!", "info");
+            }
+        }
+        
+        // Function to reset theme to system preference
+        function resetToSystemTheme() {
+            // Remove user preference
+            localStorage.removeItem('darkMode');
+            
+            // Apply system preference
+            const prefersDarkMode = window.matchMedia && 
+                window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (prefersDarkMode) {
+                document.body.classList.add('dark-mode');
+                const btn = document.querySelector('.dark-mode-toggle i');
+                if (btn) btn.className = 'fas fa-sun';
+            } else {
+                document.body.classList.remove('dark-mode');
+                const btn = document.querySelector('.dark-mode-toggle i');
+                if (btn) btn.className = 'fas fa-moon';
+            }
+            
+            // Add system preference indicator class
+            document.body.classList.add('using-system-preference');
+            
+            // Apply matrix effect
+            addMatrixEffect();
+            
+            // Show toast
+            showToast("Using system color scheme preference", "info");
+        }
+        
+        // Fake "deleting production" sequence for vibe mode
+        function fakeDeleteProduction() {
+            // Only run this if we're in vibe mode
+            if (!vibeModeActive) return;
+            
+            // Create a terminal-style overlay
+            const terminalOverlay = document.createElement('div');
+            terminalOverlay.style.position = 'fixed';
+            terminalOverlay.style.top = '0';
+            terminalOverlay.style.left = '0';
+            terminalOverlay.style.right = '0';
+            terminalOverlay.style.bottom = '0';
+            terminalOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.9)';
+            terminalOverlay.style.color = '#00FF00';
+            terminalOverlay.style.fontFamily = "'Fira Code', monospace";
+            terminalOverlay.style.padding = '20px';
+            terminalOverlay.style.zIndex = '10000';
+            terminalOverlay.style.overflow = 'auto';
+            terminalOverlay.style.paddingTop = '50px';
+            
+            document.body.appendChild(terminalOverlay);
+            
+            // Add a close button
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = '✖';
+            closeBtn.style.position = 'absolute';
+            closeBtn.style.top = '10px';
+            closeBtn.style.right = '10px';
+            closeBtn.style.background = 'none';
+            closeBtn.style.border = 'none';
+            closeBtn.style.color = '#FF5722';
+            closeBtn.style.fontSize = '24px';
+            closeBtn.style.cursor = 'pointer';
+            closeBtn.style.zIndex = '10001';
+            
+            closeBtn.addEventListener('click', () => {
+                terminalOverlay.remove();
+            });
+            
+            terminalOverlay.appendChild(closeBtn);
+            
+            // Add terminal content area
+            const terminalContent = document.createElement('div');
+            terminalOverlay.appendChild(terminalContent);
+            
+            // Destructive commands to pretend to run
+            const commands = [
+                { text: "ssh admin@production.pizza-server.com", delay: 800 },
+                { text: "Password: ********", delay: 1200 },
+                { text: "Last login: Thu Apr 11 09:32:16 2025 from 192.168.1.42", delay: 800 },
+                { text: "admin@prod-server:~$ sudo -i", delay: 1000 },
+                { text: "Password: ********", delay: 800 },
+                { text: "root@prod-server:~# cd /var/lib/postgresql/data", delay: 1200 },
+                { text: "root@prod-server:/var/lib/postgresql/data# ls", delay: 800 },
+                { text: "base        pg_commit_ts  pg_logical    pg_serial     pg_twophase  PG_VERSION postgresql.conf\ndbconfig.yml  pg_clog       pg_multixact  pg_snapshots  pg_xlog      postmaster.opts\nglobal       pg_dynshmem   pg_notify     pg_stat_tmp   PG_VERSION   postmaster.pid", delay: 1000 },
+                { text: "root@prod-server:/var/lib/postgresql/data# rm -rf *", delay: 1500, warning: true },
+                { text: "Are you sure you want to delete ALL production data? This cannot be undone! [y/N]: y", delay: 2000, warning: true },
+                { text: "Deleting production database...", delay: 3000, warning: true },
+                { text: "Pizza orders deleted: 3,291", delay: 800 },
+                { text: "Customer records deleted: 18,734", delay: 800 },
+                { text: "Pizza recipes deleted: 42", delay: 800 },
+                { text: "ERROR: Catastrophic system failure detected!", delay: 1500, error: true },
+                { text: "Attempting to restore from backup...", delay: 2000 },
+                { text: "No backups found. Creating empty database.", delay: 1500, error: true },
+                { text: "root@prod-server:/var/lib/postgresql/data# echo 'oops' > PG_VERSION", delay: 1000 },
+                { text: "root@prod-server:/var/lib/postgresql/data# logout", delay: 800 },
+                { text: "admin@prod-server:~$ logout", delay: 800 },
+                { text: "Connection to production.pizza-server.com closed.", delay: 1200 },
+                { text: "... just kidding! This was a vibe mode simulation. No pizzas were harmed in the making of this chaos.", delay: 0, success: true }
+            ];
+            
+            // Function to append text with typewriter effect
+            function appendText(text, isWarning = false, isError = false, isSuccess = false) {
+                const line = document.createElement('div');
+                line.style.marginBottom = '8px';
+                line.style.lineHeight = '1.4';
+                line.style.whiteSpace = 'pre-wrap';
+                
+                if (isWarning) {
+                    line.style.color = '#FFEB3B';
+                    line.style.fontWeight = 'bold';
+                } else if (isError) {
+                    line.style.color = '#F44336';
+                    line.style.fontWeight = 'bold';
+                } else if (isSuccess) {
+                    line.style.color = '#4CAF50';
+                    line.style.fontWeight = 'bold';
+                    line.style.fontSize = '1.2em';
+                }
+                
+                terminalContent.appendChild(line);
+                
+                let i = 0;
+                const typeWriter = () => {
+                    if (i < text.length) {
+                        line.textContent += text.charAt(i);
+                        i++;
+                        terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
+                        setTimeout(typeWriter, Math.random() * 10 + 5);
+                    } else {
+                        terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
+                    }
+                };
+                
+                typeWriter();
+                
+                // Ensure scrolling
+                terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
+            }
+            
+            // Function to run commands sequentially
+            function runCommands(index = 0) {
+                if (index >= commands.length) return;
+                
+                const command = commands[index];
+                appendText(command.text, command.warning, command.error, command.success);
+                
+                // Ensure scrolling for each command
+                terminalOverlay.scrollTop = terminalOverlay.scrollHeight;
+                
+                setTimeout(() => {
+                    runCommands(index + 1);
+                }, command.delay);
+            }
+            
+            // Start running commands
+            runCommands();
+            
+            // Add a shaking effect during dangerous commands
+            let shakeInterval;
+            setTimeout(() => {
+                shakeInterval = setInterval(() => {
+                    terminalOverlay.style.transform = `translate(${Math.random() * 5 - 2.5}px, ${Math.random() * 5 - 2.5}px)`;
+                }, 50);
+                
+                setTimeout(() => {
+                    clearInterval(shakeInterval);
+                    terminalOverlay.style.transform = 'translate(0, 0)';
+                }, 6000);
+            }, 9000); // Start shaking when we get to the dangerous rm command
+        }
+        
+        // Initialize dark mode and vibe mode
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for system color scheme preference
+            const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Check if we're using system preference or user-set preference
+            const isUsingUserPreference = localStorage.getItem('darkMode') !== null;
+            
+            // First check localStorage (user preference), then fall back to system preference
+            const shouldUseDarkMode = isUsingUserPreference 
+                ? localStorage.getItem('darkMode') === 'true'
+                : prefersDarkMode;
+            
+            // Apply dark mode if needed
+            if (shouldUseDarkMode) {
+                document.body.classList.add('dark-mode');
+                // Update icon
+                const btn = document.querySelector('.dark-mode-toggle i');
+                if (btn) {
+                    btn.className = 'fas fa-sun';
+                }
+            }
+            
+            // If using system preference, add the indicator class
+            if (!isUsingUserPreference) {
+                document.body.classList.add('using-system-preference');
+            }
+            
+            // Listen for system preference changes
+            if (window.matchMedia) {
+                const colorSchemeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                
+                // Modern browsers
+                if (colorSchemeQuery.addEventListener) {
+                    colorSchemeQuery.addEventListener('change', (e) => {
+                        // Only apply if user hasn't set a manual preference
+                        if (localStorage.getItem('darkMode') === null) {
+                            if (e.matches) {
+                                document.body.classList.add('dark-mode');
+                                const btn = document.querySelector('.dark-mode-toggle i');
+                                if (btn) btn.className = 'fas fa-sun';
+                            } else {
+                                document.body.classList.remove('dark-mode');
+                                const btn = document.querySelector('.dark-mode-toggle i');
+                                if (btn) btn.className = 'fas fa-moon';
+                            }
+                            
+                            // Apply matrix effect based on current mode
+                            addMatrixEffect();
+                        }
+                    });
+                } 
+                // Safari & older browsers
+                else if (colorSchemeQuery.addListener) {
+                    colorSchemeQuery.addListener((e) => {
+                        // Only apply if user hasn't set a manual preference
+                        if (localStorage.getItem('darkMode') === null) {
+                            if (e.matches) {
+                                document.body.classList.add('dark-mode');
+                                const btn = document.querySelector('.dark-mode-toggle i');
+                                if (btn) btn.className = 'fas fa-sun';
+                            } else {
+                                document.body.classList.remove('dark-mode');
+                                const btn = document.querySelector('.dark-mode-toggle i');
+                                if (btn) btn.className = 'fas fa-moon';
+                            }
+                            
+                            // Apply matrix effect based on current mode
+                            addMatrixEffect();
+                        }
+                    });
+                }
+            }
+            
+            // Check for vibe mode preference
+            if (localStorage.getItem('vibeMode') === 'true') {
+                vibeModeActive = true;
+                
+                // Update vibe button
+                const vibeBtn = document.querySelector('.vibe-mode-toggle');
+                if (vibeBtn) {
+                    vibeBtn.classList.add('vibe-mode-active');
+                    vibeBtn.innerHTML = '<i class="fas fa-dizzy"></i>';
+                }
+                
+                // Add vibe mode class to body
+                document.body.classList.add('vibe-mode');
+                
+                // Start the chaos
+                setTimeout(() => {
+                    startVibeChaos();
+                    showToast("🌈 Vibe Mode active: things might get weird...", "warning");
+                }, 1000);
+            }
+            
+            // Add matrix effect to pre elements in dark mode
+            addMatrixEffect();
+            
+            // Add observer for dynamically added pre elements
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.addedNodes.length) {
+                        addMatrixEffect();
+                        
+                        // In vibe mode, randomly make new elements walk/melt/float
+                        if (vibeModeActive && Math.random() < 0.3) {
+                            setTimeout(applyRandomEffects, 500);
+                        }
+                        
+                        // Random chance to trigger "delete production" sequence when 
+                        // calculating in vibe mode
+                        if (vibeModeActive && mutation.addedNodes[0] && 
+                            mutation.addedNodes[0].id === 'pizza-report-container' && 
+                            Math.random() < 0.3) {
+                            setTimeout(fakeDeleteProduction, 2000);
+                        }
+                    }
+                });
+            });
+            
+            observer.observe(document.body, { childList: true, subtree: true });
+        });
+        // New vibe mode helper functions
+        function randomButtonChaos() {
+            const buttons = document.querySelectorAll('button');
+            if (buttons.length === 0) return;
+            
+            const randomBtn = buttons[Math.floor(Math.random() * buttons.length)];
+            const chaos = Math.random();
+            
+            if (chaos < 0.3) {
+                // Button runs away from cursor
+                randomBtn.style.transition = 'transform 0.3s';
+                randomBtn.addEventListener('mouseenter', function runAway() {
+                    const x = (Math.random() - 0.5) * 100;
+                    const y = (Math.random() - 0.5) * 100;
+                    this.style.transform = `translate(${x}px, ${y}px)`;
+                    setTimeout(() => {
+                        this.style.transform = '';
+                        this.removeEventListener('mouseenter', runAway);
+                    }, 3000);
+                });
+            } else if (chaos < 0.6) {
+                // Button changes text temporarily
+                const originalText = randomBtn.textContent;
+                const funnyTexts = ['404 Button Not Found', 'Click if you dare', 'I\'m on break', 
+                                   'Try again later', '¯\\_(ツ)_/¯', 'Button.exe stopped', 
+                                   'Loading...', 'Out for lunch', 'Press Alt+F4'];
+                randomBtn.textContent = funnyTexts[Math.floor(Math.random() * funnyTexts.length)];
+                setTimeout(() => {
+                    randomBtn.textContent = originalText;
+                }, 5000);
+            } else {
+                // Button multiplies when clicked
+                randomBtn.addEventListener('click', function multiply() {
+                    const clone = this.cloneNode(true);
+                    clone.style.position = 'absolute';
+                    clone.style.left = Math.random() * window.innerWidth + 'px';
+                    clone.style.top = Math.random() * window.innerHeight + 'px';
+                    clone.textContent = '🍕 CLONE 🍕';
+                    document.body.appendChild(clone);
+                    setTimeout(() => clone.remove(), 3000);
+                    this.removeEventListener('click', multiply);
+                }, { once: true });
+            }
+        }
+        
+        function showRandomPizzaFact() {
+            const facts = [
+                "🍕 Fun Fact: The first computer bug was actually a moth trapped in a relay",
+                "🍕 Did you know? Pizza was invented before the internet, but only barely",
+                "🍕 Breaking: Scientists confirm pizza is a flat circle (controversial!)",
+                "🍕 Alert: Your code has more bugs than a pizza has toppings",
+                "🍕 Study shows 9/10 developers prefer pizza over sleep",
+                "🍕 Warning: Pizza overflow detected in stomach buffer",
+                "🍕 Fact: The average developer consumes their weight in pizza annually",
+                "🍕 News: Pineapple on pizza causes more debates than tabs vs spaces",
+                "🍕 Discovery: Pizza grease improves keyboard performance by 0%",
+                "🍕 Research: Debugging is 90% pizza, 10% crying, 100% math issues"
+            ];
+            
+            const fact = facts[Math.floor(Math.random() * facts.length)];
+            const factDiv = document.createElement('div');
+            factDiv.style.position = 'fixed';
+            factDiv.style.bottom = '20px';
+            factDiv.style.left = '50%';
+            factDiv.style.transform = 'translateX(-50%)';
+            factDiv.style.background = 'linear-gradient(45deg, #ff6b6b, #4ecdc4)';
+            factDiv.style.color = 'white';
+            factDiv.style.padding = '15px 25px';
+            factDiv.style.borderRadius = '25px';
+            factDiv.style.fontSize = '14px';
+            factDiv.style.fontWeight = 'bold';
+            factDiv.style.zIndex = '9999';
+            factDiv.style.animation = 'slideInUp 0.5s ease';
+            factDiv.textContent = fact;
+            
+            document.body.appendChild(factDiv);
+            setTimeout(() => {
+                factDiv.style.animation = 'slideOutDown 0.5s ease';
+                setTimeout(() => factDiv.remove(), 500);
+            }, 4000);
+        }
+
+        // Add CSS animations for pizza facts
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes slideInUp {
+                from {
+                    transform: translate(-50%, 100px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translate(-50%, 0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOutDown {
+                from {
+                    transform: translate(-50%, 0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translate(-50%, 100px);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+    </script>
+</body>
+
+</html>
