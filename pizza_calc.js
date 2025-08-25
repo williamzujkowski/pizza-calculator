@@ -490,19 +490,21 @@
     function showAllAchievements() {
         // Create modal overlay
         const modal = document.createElement('div');
+        modal.className = 'achievement-modal-overlay';
         modal.style.cssText = `
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.7);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 100000;
             animation: fadeIn 0.3s ease;
-            backdrop-filter: blur(2px);
+            backdrop-filter: blur(3px);
+            cursor: pointer;
         `;
         
         // Click outside to close
@@ -512,6 +514,15 @@
             }
         };
         
+        // Add ESC key handler
+        const handleEscape = (e) => {
+            if (e.key === 'Escape') {
+                modal.remove();
+                document.removeEventListener('keydown', handleEscape);
+            }
+        };
+        document.addEventListener('keydown', handleEscape);
+        
         // Create modal content
         const content = document.createElement('div');
         content.style.cssText = `
@@ -519,11 +530,12 @@
             border-radius: 12px;
             padding: 2rem;
             max-width: 90%;
-            width: 800px;
-            max-height: 85vh;
+            width: 700px;
+            max-height: 80vh;
             overflow-y: auto;
             position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            cursor: default;
             ${madnessLevel >= 5 ? 'animation: gentle-wobble 4s ease-in-out infinite;' : ''}
         `;
         
@@ -550,18 +562,48 @@
         const closeBtn = document.createElement('button');
         closeBtn.textContent = madnessLevel >= 9 ? '🍕' : '✕';
         closeBtn.style.cssText = `
-            background: none;
-            border: none;
+            background: ${madnessLevel >= 8 ? '#ff0000' : '#f0f0f0'};
+            border: 2px solid ${madnessLevel >= 8 ? '#ffff00' : '#ddd'};
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
             font-size: 1.5rem;
             cursor: pointer;
-            color: ${madnessLevel >= 8 ? '#ff0000' : '#666'};
-            padding: 0.5rem;
+            color: ${madnessLevel >= 8 ? '#ffff00' : '#333'};
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
         `;
+        closeBtn.onmouseover = () => {
+            closeBtn.style.background = madnessLevel >= 8 ? '#ff6666' : '#e0e0e0';
+            closeBtn.style.transform = 'scale(1.1)';
+        };
+        closeBtn.onmouseout = () => {
+            closeBtn.style.background = madnessLevel >= 8 ? '#ff0000' : '#f0f0f0';
+            closeBtn.style.transform = 'scale(1)';
+        };
         closeBtn.onclick = () => modal.remove();
         
         header.appendChild(title);
         header.appendChild(closeBtn);
         content.appendChild(header);
+        
+        // Add hint text
+        const hint = document.createElement('p');
+        hint.textContent = 'Click outside or press ESC to close';
+        hint.style.cssText = `
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin: 0;
+        `;
+        content.appendChild(hint);
         
         // Stats
         const stats = document.createElement('div');
