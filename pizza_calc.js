@@ -393,23 +393,23 @@
                 }
                 
                 .achievement-tracker {
-                    position: fixed;
-                    bottom: 20px;
-                    left: 20px;
-                    background: white;
-                    border: 1px solid var(--corp-border);
-                    border-radius: 8px;
-                    padding: 0.5rem 1rem;
-                    font-size: 0.875rem;
-                    color: var(--corp-text-muted);
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    z-index: 1000;
+                    position: fixed !important;
+                    bottom: 20px !important;
+                    right: 20px !important;
+                    width: auto !important;
+                    height: auto !important;
+                    max-width: 300px !important;
+                    border-radius: 25px !important;
+                    padding: 12px 20px !important;
+                    font-size: 1rem !important;
+                    cursor: pointer !important;
+                    z-index: 1000 !important;
+                    display: inline-block !important;
                 }
                 
                 .achievement-tracker:hover {
                     transform: scale(1.05);
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
                 }
             `;
             document.head.appendChild(styles);
@@ -427,19 +427,23 @@
             tracker.id = 'achievementTracker';
             tracker.className = 'achievement-tracker';
             tracker.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
+                position: fixed !important;
+                bottom: 20px !important;
+                right: 20px !important;
+                width: auto !important;
+                height: auto !important;
+                max-width: 300px !important;
                 background: ${madnessLevel >= 8 ? 'linear-gradient(135deg, #ff0000, #ffff00)' : 'linear-gradient(135deg, #004080, #0066cc)'};
                 color: white;
-                padding: 12px 20px;
+                padding: 12px 20px !important;
                 border-radius: 25px;
                 cursor: pointer;
                 z-index: 1000;
                 font-weight: bold;
                 box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-                transition: all 0.3s ease;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
                 user-select: none;
+                display: inline-block !important;
                 ${madnessLevel >= 5 ? 'animation: gentle-breathe 3s ease-in-out infinite;' : ''}
             `;
             
@@ -467,13 +471,22 @@
             <span style="font-size: 0.9em; opacity: 0.9;">(${percentage}%)</span>
         `;
         
-        // Update styling based on progress
+        // Update styling based on progress (preserve size constraints)
         if (percentage === 100) {
             tracker.style.background = 'linear-gradient(135deg, #FFD700, #FFA500)';
             tracker.style.animation = 'pulse 1s ease-in-out infinite, rainbow 5s linear infinite';
         } else if (madnessLevel >= 8) {
             tracker.style.background = 'linear-gradient(135deg, #ff0000, #ffff00)';
         }
+        
+        // Ensure size constraints are maintained
+        tracker.style.width = 'auto';
+        tracker.style.height = 'auto';
+        tracker.style.maxWidth = '300px';
+        tracker.style.display = 'inline-block';
+        tracker.style.position = 'fixed';
+        tracker.style.bottom = '20px';
+        tracker.style.right = '20px';
         
         // Add click handler to show all achievements
         tracker.onclick = function(e) {
